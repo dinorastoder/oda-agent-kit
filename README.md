@@ -1,106 +1,59 @@
 # Oda Agent Kit
 
-A TypeScript npm workspace monorepo for building reusable automation tools around Oda grocery shopping.
+A TypeScript npm-workspace monorepo for safe Oda grocery automation.
+
+The project is organized around reusable domain logic in `packages/core`, with thin adapters for CLI, MCP, and OpenClaw.
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`@oda-agent/core`](./packages/core) | Oda API client, types, and authentication helpers |
-| [`@oda-agent/cli`](./packages/cli) | CLI tool for interacting with Oda from the terminal |
-| [`@oda-agent/mcp-server`](./packages/mcp-server) | MCP server exposing Oda operations as AI tools |
-| [`@oda-agent/openclaw-plugin`](./packages/openclaw-plugin) | OpenClaw plugin for safe grocery planning and automation |
+- `@oda-agent/core`: shared Oda client interfaces, domain models, and core logic
+- `@oda-agent/cli`: terminal commands for local debugging and manual workflows
+- `@oda-agent/mcp-server`: MCP stdio server exposing tool-style operations
+- `@oda-agent/openclaw-plugin`: OpenClaw plugin integration layer
 
-## Features
+## Safety model
 
-- 🛒 **Grocery planning** — search products, manage shopping lists
-- 📦 **Order history** — analyse past orders and spending
-- 🛍️ **Cart preparation** — build and manage your cart programmatically
-- 🚚 **Delivery slot assistance** — find and book available delivery slots
-- 🤖 **AI integration** — MCP server and OpenClaw plugin for LLM-driven workflows
+- Read-only first.
+- Plan before mutation.
+- Explicit confirmation before cart mutation.
+- Stronger confirmation for delivery-slot changes.
+- No final order placement in v0.
 
-## Getting Started
+See `docs/safety-model.md` and `docs/tool-contracts.md` for details.
 
-### Prerequisites
+## Development
 
-- Node.js ≥ 18
-- npm ≥ 9
+Prerequisites:
 
-### Installation
+- Node.js >= 18
+- npm workspaces
+
+Install and validate:
 
 ```bash
 npm install
 npm run build
+npm test
+npm run lint
 ```
 
-### Configuration
-
-Copy `.env.example` to `.env` and fill in your Oda credentials:
-
-```bash
-cp .env.example .env
-```
-
-### Usage
-
-#### CLI
-
-```bash
-npx @oda-agent/cli --help
-```
-
-#### MCP Server
-
-```bash
-npx @oda-agent/mcp-server
-```
-
-## Development
-
-### Build all packages
-
-```bash
-npm run build
-```
-
-### Run tests
-
-```bash
-npm run test
-```
-
-### Type-check
-
-```bash
-npm run typecheck
-```
-
-### Clean build artifacts
-
-```bash
-npm run clean
-```
-
-## Repository Structure
+## Repo layout
 
 ```text
-oda-agent-kit/
-├── packages/
-│   ├── core/               # @oda-agent/core
-│   ├── cli/                # @oda-agent/cli
-│   ├── mcp-server/         # @oda-agent/mcp-server
-│   └── openclaw-plugin/    # @oda-agent/openclaw-plugin
-├── docs/                   # Documentation
-├── scripts/                # Development and CI scripts
-├── tsconfig.base.json      # Shared TypeScript config
-├── package.json            # Workspace root
-└── .env.example            # Environment variable template
+packages/
+  core/
+  cli/
+  mcp-server/
+  openclaw-plugin/
+docs/
+scripts/
 ```
 
-## Contributing
+## Planning artifacts
 
-See [AGENTS.md](./AGENTS.md) for contributor and agent guidelines.
+The repository includes optional Copilot planning artifacts in:
 
-## License
+- `docs/copilot-prompts/`
+- `docs/github-issues/`
 
-MIT
+They can be used to manage iterative implementation work, but they are not required for normal development.

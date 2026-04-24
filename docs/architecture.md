@@ -1,38 +1,102 @@
-# Architecture
+# Architecture — Oda Agent Kit
 
-## Overview
+## Summary
 
-`oda-agent-kit` is an npm workspace monorepo. The dependency graph is:
+This project uses one monorepo with multiple publishable npm packages.
 
+The reusable Oda logic lives in `packages/core`.
+
+Adapters live in separate packages:
+
+- `packages/cli`
+- `packages/mcp-server`
+- `packages/openclaw-plugin`
+
+## Dependency graph
+
+```text
+@oda-agent/core
+        ↑
+        ├── @oda-agent/cli
+        ├── @oda-agent/mcp-server
+        └── @oda-agent/openclaw-plugin
 ```
-@oda-agent/cli ──────────────┐
-@oda-agent/mcp-server ────────┤──▶ @oda-agent/core ──▶ Oda API
-@oda-agent/openclaw-plugin ──┘
-```
 
-`@oda-agent/core` is the only package that communicates with the Oda HTTP API. All other packages import and delegate to it.
-
-## Package Details
+## Package responsibilities
 
 ### `@oda-agent/core`
 
-Provides:
-- `OdaClient` — authenticated HTTP client for the Oda REST API
-- `OdaApiError` — typed error class
-- All data types (`OdaProduct`, `OdaCart`, `OdaOrder`, `OdaDeliverySlot`, …)
+Owns:
+
+- auth/session handling
+- HTTP client
+- CSRF handling
+- typed Oda domain models
+- product search
+- order history
+- cart read/write abstractions
+- shopping lists
+- delivery slots
+- household preference analysis
+
+Does not own:
+
+- CLI output formatting
+- MCP transport
+- OpenClaw plugin registration
 
 ### `@oda-agent/cli`
 
-A `commander`-based terminal tool. Reads credentials from environment variables (via `dotenv`). Supports `--json` flag for machine-readable output.
+Owns:
+
+- human-readable commands
+- JSON output mode
+- local debugging
+- smoke testing live APIs when explicitly enabled
 
 ### `@oda-agent/mcp-server`
 
-Wraps `OdaClient` into MCP tools using `@modelcontextprotocol/sdk`. Runs as a stdio MCP server so it can be embedded in any MCP-compatible AI host.
+Owns:
+
+- MCP tools
+- MCP resources
+- MCP prompts
+- JSON-RPC stdio server
 
 ### `@oda-agent/openclaw-plugin`
 
-Higher-level orchestration: grocery planning, order-history analysis, cart preparation, and delivery-slot selection. Built on top of `@oda-agent/core`.
+Owns:
 
-## Build System
+- OpenClaw plugin manifest
+- OpenClaw tool registration
+- OpenClaw skill instructions
+- tool grouping by risk level
 
-All packages are compiled with `tsc`. Each has its own `tsconfig.json` that extends `../../tsconfig.base.json`. The workspace root orchestrates builds via `npm run build --workspaces`.
+## Tool risk levels
+
+### Safe/read-only
+
+- auth status
+- search
+- product details
+- product images
+- cart read
+- order history
+- lists
+- slots
+
+### Medium/cart mutation
+
+- add items
+- update quantity
+- remove items
+- apply list to cart
+- reserve slot
+
+### High/final order
+
+- place order
+- change submitted order
+- add to existing order
+
+High-risk tools are intentionally out of scope for v0.

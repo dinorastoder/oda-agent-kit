@@ -1,89 +1,95 @@
-# AGENTS.md — Contributor & Agent Guidelines
+# AGENTS.md — Repository Instructions for Copilot Coding Agent
 
-This document describes conventions and rules for human contributors and AI coding agents working in this repository.
+You are working on oda-agent-kit, a TypeScript monorepo for interacting with the Norwegian online grocery store Oda.
 
-## Repository Layout
+## Primary goal
+
+Build and maintain a reusable Oda automation toolkit with:
+
+1. A reusable core library.
+2. A CLI for humans and debugging.
+3. An MCP server for model clients.
+4. An OpenClaw plugin and skill for agentic grocery workflows.
+
+## Architecture rule
+
+Keep Oda business logic in packages/core.
+
+Keep adapter packages thin:
+
+- packages/cli
+- packages/mcp-server
+- packages/openclaw-plugin
+
+Dependency direction must be:
 
 ```text
-oda-agent-kit/
-├── packages/
-│   ├── core/               # @oda-agent/core  — Oda API client & types
-│   ├── cli/                # @oda-agent/cli   — Terminal CLI
-│   ├── mcp-server/         # @oda-agent/mcp-server — MCP server
-│   └── openclaw-plugin/    # @oda-agent/openclaw-plugin
-├── docs/                   # Markdown documentation
-├── scripts/                # Build / CI helper scripts
-├── tsconfig.base.json      # Shared TS compiler options
-├── package.json            # Workspace root (npm workspaces)
-└── .env.example            # Env variable template (never commit .env)
+packages/core
+        ↑
+        ├── packages/cli
+        ├── packages/mcp-server
+        └── packages/openclaw-plugin
 ```
 
-## General Rules
+No adapter package may import another adapter package.
 
-1. **Never commit secrets.** `.env` files and credentials must never be checked in. Use `.env.example` for templates.
-2. **TypeScript only.** All source files must be `.ts` (no plain `.js` in `src/`).
-3. **Strict mode.** Every package extends `tsconfig.base.json` which enables `"strict": true`.
-4. **Conventional Commits.** Use the format `type(scope): message` (e.g. `feat(core): add product search`).
-5. **One concern per package.** Keep packages focused; cross-package dependencies should go through the public API, not internal paths.
+## Package names
 
-## Coding Standards
+Use these package names:
 
-- Use `async/await`; avoid raw Promise chains.
-- Prefer named exports over default exports.
-- Export all public types from `src/index.ts`.
-- Write unit tests for all non-trivial logic. Place tests in `src/__tests__/`.
-- Keep functions small and pure where possible.
-
-## Package-Specific Notes
-
-### `@oda-agent/core`
-
-- This is the only package allowed to make HTTP calls to the Oda API.
-- Export a typed `OdaClient` class as the primary entry point.
-- All API response types must live in `src/types.ts`.
-
-### `@oda-agent/cli`
-
-- Use `commander` for argument parsing.
-- The binary entry point is `src/cli.ts` (declared as `"bin"` in `package.json`).
-- Output should be human-readable by default; support `--json` flag for machine output.
-
-### `@oda-agent/mcp-server`
-
-- Implement using the `@modelcontextprotocol/sdk` package.
-- Each Oda capability (search, cart, orders, delivery) maps to one MCP tool.
-- Keep tool descriptions concise but accurate for LLM consumption.
-
-### `@oda-agent/openclaw-plugin`
-
-- Expose a plugin factory function as the default export of `src/index.ts`.
-- Depends on `@oda-agent/core` for all Oda API access.
-
-## Running the Workspace
-
-```bash
-# Install all dependencies
-npm install
-
-# Build all packages
-npm run build
-
-# Run all tests
-npm run test
-
-# Type-check without emitting
-npm run typecheck
-
-# Clean build artifacts
-npm run clean
+```text
+@oda-agent/core
+@oda-agent/cli
+@oda-agent/mcp-server
+@oda-agent/openclaw-plugin
 ```
 
-## Pull Request Checklist
+## Current stack
 
-- [ ] `npm run build` passes with no errors
-- [ ] `npm run test` passes
-- [ ] `npm run typecheck` passes
-- [ ] No new linting errors introduced
-- [ ] `.env` is **not** committed
-- [ ] New public APIs are exported from `src/index.ts`
-- [ ] Commit messages follow Conventional Commits
+Use:
+
+- TypeScript
+- npm workspaces
+- Jest (ts-jest) tests per package
+- commander for CLI
+- @modelcontextprotocol/sdk for MCP server
+
+Current compiler/module setup is CommonJS.
+
+Planned direction:
+
+- ESM modules
+- Zod at external API boundaries
+- fixture-first tests for schema and normalization layers
+
+When introducing planned changes, migrate consistently across packages.
+
+## Safety requirements
+
+- Never store plaintext credentials in the repository.
+- Use environment variables or local ignored session storage.
+- Keep .env.example; never commit .env.
+- Mutating tools must clearly describe intended changes.
+- Final order placement must not exist in v0.
+- Do not add payment logic.
+- Tests should use fixtures, not live Oda calls, by default.
+- MCP stdio server logs must go to stderr, not stdout.
+
+## Tool design guidance
+
+Expose medium-level tools, not raw HTTP endpoints.
+
+Read-only tools should be safe by default.
+
+Cart mutation tools should be optional and confirmation-protected.
+
+High-risk ordering tools are out of scope for v0.
+
+## Development workflow
+
+- Work in small PRs.
+- Prefer incremental changes over repo-wide restructuring.
+- Keep existing scripts and tests working: npm install, npm run build, npm test, npm run lint.
+- Use docs/copilot-prompts and docs/github-issues as optional planning aids.
+
+Do not jump directly to full ordering automation.
