@@ -1,0 +1,38 @@
+[
+  {
+    "id": 42,
+    "name": "Weekly staples",
+    "items": [
+      {
+        "product": {
+          "id": 123,
+          "full_name": "Oatly Oat Drink 1L",
+          "brand": "Oatly",
+          "name": "Oat Drink",
+          "front_url": "/products/123-oatly-oat-drink",
+          "gross_price": "19.90",
+          "gross_unit_price": "19.90",
+          "unit_price_quantity_abbreviation": "l",
+          "unit_price_quantity_name": "liter",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": {
+            "is_available": true,
+            "description": null
+          }
+        },
+        "quantity": 3
+      }
+    ]
+  }
+]

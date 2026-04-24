@@ -1,3 +1,45 @@
-export { OdaClient, OdaApiError } from './client.js';
-export * from './types.js';
-export { DEFAULT_BASE_URL, buildUrl } from './utils.js';
+export { OdaApiError, OdaClient, OdaSchemaError } from './client.js';
+export {
+  OdaAvailabilitySchema,
+  OdaCartItemSchema,
+  OdaCartSchema,
+  OdaDeliverySlotSchema,
+  OdaDiscountSchema,
+  OdaOrderItemSchema,
+  OdaOrderSchema,
+  OdaProductImageAssetSchema,
+  OdaProductImageSchema,
+  OdaProductSchema,
+  OdaSearchResponseSchema,
+  OdaShoppingListItemSchema,
+  OdaShoppingListSchema,
+  createOdaPageSchema,
+} from './schemas.js';
+export {
+  DEFAULT_BASE_URL,
+  buildUrl,
+} from './utils.js';
+export type {
+  OdaAvailability,
+  OdaCart,
+  OdaCartItem,
+  OdaClientConfig,
+  OdaClientOptions,
+  OdaCredentials,
+  OdaDeliverySlot,
+  OdaDiscount,
+  OdaHttpClient,
+  OdaHttpMethod,
+  OdaHttpRequest,
+  OdaHttpResponse,
+  OdaOrder,
+  OdaOrderItem,
+  OdaPage,
+  OdaProduct,
+  OdaProductImage,
+  OdaProductImageAsset,
+  OdaSearchResponse,
+  OdaSessionStore,
+  OdaShoppingList,
+  OdaShoppingListItem,
+} from './types.js';
