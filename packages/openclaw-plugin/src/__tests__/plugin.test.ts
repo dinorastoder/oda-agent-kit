@@ -1,5 +1,5 @@
 import { createOpenClawPlugin } from '../plugin';
-import type { OdaClient, OdaSearchResponse, OdaPage, OdaOrder, OdaDeliverySlot } from '@oda-agent/core';
+import type { OdaClient, OdaSearchResponse, OdaDeliverySlot } from '@oda-agent/core';
 
 function makeClient(overrides: Partial<OdaClient> = {}): OdaClient {
   return {
