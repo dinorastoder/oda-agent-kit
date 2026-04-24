@@ -23,7 +23,7 @@ export async function startServer(env: NodeJS.ProcessEnv = process.env): Promise
     await client.login();
     authenticated = true;
   } else {
-    console.error('Starting MCP server without Oda credentials; oda_auth_status will report unauthenticated.');
+    console.error('Starting MCP server without Oda credentials; oda_auth_status will report configured=false and authenticated=false.');
   }
 
   const server = createOdaMcpServer(client, {
