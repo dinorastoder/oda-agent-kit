@@ -1,3 +1,28 @@
+/** Oda product image variant. */
+export interface OdaProductImageAsset {
+  url: string;
+}
+
+/** Oda product images. */
+export interface OdaProductImage {
+  thumbnail: OdaProductImageAsset;
+  small_thumbnail: OdaProductImageAsset;
+  large_thumbnail: OdaProductImageAsset;
+}
+
+/** Product discount metadata. */
+export interface OdaDiscount {
+  percentage: number;
+  description: string;
+  undiscounted_gross_price: string;
+}
+
+/** Availability information for a product. */
+export interface OdaAvailability {
+  is_available: boolean;
+  description: string | null;
+}
+
 /** Oda product as returned by the search and product detail endpoints. */
 export interface OdaProduct {
   id: number;
@@ -18,23 +43,6 @@ export interface OdaProduct {
   availability: OdaAvailability;
 }
 
-export interface OdaProductImage {
-  thumbnail: { url: string };
-  small_thumbnail: { url: string };
-  large_thumbnail: { url: string };
-}
-
-export interface OdaDiscount {
-  percentage: number;
-  description: string;
-  undiscounted_gross_price: string;
-}
-
-export interface OdaAvailability {
-  is_available: boolean;
-  description: string | null;
-}
-
 /** A single item in the shopping cart. */
 export interface OdaCartItem {
   id: number;
@@ -52,6 +60,13 @@ export interface OdaCart {
   item_count: number;
 }
 
+/** A single item in a past order. */
+export interface OdaOrderItem {
+  product: OdaProduct;
+  quantity: number;
+  line_price: string;
+}
+
 /** A past order. */
 export interface OdaOrder {
   id: number;
@@ -62,10 +77,17 @@ export interface OdaOrder {
   items: OdaOrderItem[];
 }
 
-export interface OdaOrderItem {
+/** A saved shopping list item. */
+export interface OdaShoppingListItem {
   product: OdaProduct;
   quantity: number;
-  line_price: string;
+}
+
+/** A saved shopping list. */
+export interface OdaShoppingList {
+  id: number;
+  name: string;
+  items: OdaShoppingListItem[];
 }
 
 /** A delivery time slot. */
@@ -84,12 +106,49 @@ export interface OdaCredentials {
   password: string;
 }
 
+/** Supported HTTP methods for the Oda client. */
+export type OdaHttpMethod = 'GET' | 'POST' | 'DELETE';
+
+/** Low-level HTTP request used by the Oda client abstraction. */
+export interface OdaHttpRequest {
+  method: OdaHttpMethod;
+  path: string;
+  headers?: Record<string, string>;
+  body?: string;
+}
+
+/** Low-level HTTP response used by the Oda client abstraction. */
+export interface OdaHttpResponse {
+  ok: boolean;
+  status: number;
+  json(): Promise<unknown>;
+}
+
+/** HTTP client abstraction for Oda API requests. */
+export interface OdaHttpClient {
+  request(request: OdaHttpRequest): Promise<OdaHttpResponse>;
+}
+
+/** Session storage abstraction used by the Oda client. */
+export interface OdaSessionStore {
+  getSessionToken(): string | null;
+  setSessionToken(token: string): void;
+  clearSessionToken(): void;
+}
+
 /** Configuration options for the OdaClient. */
-export interface OdaClientConfig {
-  credentials: OdaCredentials;
+export interface OdaClientOptions {
+  credentials?: OdaCredentials;
   /** Override the base API URL. Defaults to https://oda.com/api/v1 */
   baseUrl?: string;
+  /** Override the HTTP transport used by the client. */
+  httpClient?: OdaHttpClient;
+  /** Override how the client stores session tokens. */
+  sessionStore?: OdaSessionStore;
 }
+
+/** Backwards-compatible alias for OdaClient construction options. */
+export type OdaClientConfig = OdaClientOptions;
 
 /** Pagination wrapper returned by list endpoints. */
 export interface OdaPage<T> {
