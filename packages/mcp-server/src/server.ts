@@ -86,11 +86,11 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     {
       description: 'Retrieve a single Oda product by product ID.',
       inputSchema: z.object({
-        product_id: z.number().int().positive().describe('The Oda product ID'),
+        productId: z.number().int().positive().describe('The Oda product ID'),
       }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
-    async ({ product_id }) => createJsonResult(await client.getProduct(product_id)),
+    async ({ productId }) => createJsonResult(await client.getProduct(productId)),
   );
 
   server.registerTool(
@@ -98,14 +98,14 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     {
       description: 'Retrieve the image metadata for a single Oda product.',
       inputSchema: z.object({
-        product_id: z.number().int().positive().describe('The Oda product ID'),
+        productId: z.number().int().positive().describe('The Oda product ID'),
       }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
-    async ({ product_id }) => {
-      const product = await client.getProduct(product_id);
+    async ({ productId }) => {
+      const product = await client.getProduct(productId);
       return createJsonResult({
-        product_id: product.id,
+        productId: product.id,
         front_url: product.front_url,
         images: product.images,
       });
@@ -138,11 +138,11 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     {
       description: 'Retrieve a single Oda order by order ID.',
       inputSchema: z.object({
-        order_id: z.number().int().positive().describe('The Oda order ID'),
+        orderId: z.number().int().positive().describe('The Oda order ID'),
       }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
-    async ({ order_id }) => createJsonResult(await client.getOrder(order_id)),
+    async ({ orderId }) => createJsonResult(await client.getOrder(orderId)),
   );
 
   server.registerTool(

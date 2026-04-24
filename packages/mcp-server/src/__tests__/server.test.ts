@@ -126,7 +126,7 @@ describe('createOdaMcpServer', () => {
       });
       const productImageResult = await mcpClient.callTool({
         name: 'oda_get_product_image',
-        arguments: { product_id: 123 },
+        arguments: { productId: 123 },
       });
 
       expect(JSON.parse(getTextResult(authResult))).toEqual({
@@ -135,7 +135,7 @@ describe('createOdaMcpServer', () => {
       });
       expect(odaClient.getProduct).toHaveBeenCalledWith(123);
       expect(JSON.parse(getTextResult(productImageResult))).toEqual({
-        product_id: 123,
+        productId: 123,
         front_url: 'https://example.com/product/123',
         images: [
           {
