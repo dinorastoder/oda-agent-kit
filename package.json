@@ -1,0 +1,28 @@
+{
+  "name": "oda-agent-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript monorepo for building reusable automation tools around Oda grocery shopping",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "~5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dinorastoder/oda-agent-kit.git"
+  },
+  "license": "MIT"
+}

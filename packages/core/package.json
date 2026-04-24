@@ -1,0 +1,25 @@
+{
+  "name": "@oda-agent/core",
+  "version": "0.1.0",
+  "description": "Oda API client, types, and authentication helpers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0"
+  },
+  "license": "MIT"
+}

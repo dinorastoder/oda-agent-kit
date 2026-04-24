@@ -1,0 +1,30 @@
+{
+  "name": "@oda-agent/cli",
+  "version": "0.1.0",
+  "description": "CLI tool for interacting with Oda grocery from the terminal",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "oda": "dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@oda-agent/core": "*",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0"
+  },
+  "license": "MIT"
+}
