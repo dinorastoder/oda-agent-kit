@@ -3,13 +3,27 @@ import { Command } from 'commander';
 import { OdaClient } from '@oda-agent/core';
 import type { OdaDeliverySlot } from '@oda-agent/core';
 
+type JsonOption = {
+  json?: boolean;
+};
+
+function printJson(value: unknown): void {
+  console.log(JSON.stringify(value, null, 2));
+}
+
+function hasCredentials(): boolean {
+  return Boolean(process.env['ODA_EMAIL'] && process.env['ODA_PASSWORD']);
+}
+
 function createClient(): OdaClient {
-  const email = process.env['ODA_EMAIL'];
-  const password = process.env['ODA_PASSWORD'];
-  if (!email || !password) {
+  if (!hasCredentials()) {
     console.error('Error: ODA_EMAIL and ODA_PASSWORD environment variables must be set.');
     process.exit(1);
   }
+
+  const email = process.env['ODA_EMAIL'] as string;
+  const password = process.env['ODA_PASSWORD'] as string;
+
   return new OdaClient({
     credentials: { email, password },
     baseUrl: process.env['ODA_API_BASE_URL'],
@@ -23,6 +37,34 @@ program
   .description('CLI for the Oda grocery API')
   .version('0.1.0');
 
+const auth = program.command('auth').description('Authentication helpers');
+
+auth
+  .command('status')
+  .description('Show whether CLI authentication is configured')
+  .option('--json', 'Output raw JSON')
+  .action((opts: JsonOption) => {
+    const status = {
+      configured: hasCredentials(),
+      baseUrl: process.env['ODA_API_BASE_URL'] ?? null,
+    };
+
+    if (opts.json) {
+      printJson(status);
+      return;
+    }
+
+    console.log(
+      status.configured
+        ? 'Credentials are configured via environment variables.'
+        : 'Credentials are not configured. Set ODA_EMAIL and ODA_PASSWORD.',
+    );
+
+    if (status.baseUrl) {
+      console.log(`Using API base URL override: ${status.baseUrl}`);
+    }
+  });
+
 // ---------------------------------------------------------------------------
 // search
 // ---------------------------------------------------------------------------
@@ -30,12 +72,12 @@ program
   .command('search <query>')
   .description('Search for products')
   .option('--json', 'Output raw JSON')
-  .action(async (query: string, opts: { json?: boolean }) => {
+  .action(async (query: string, opts: JsonOption) => {
     const client = createClient();
     await client.login();
     const results = await client.searchProducts(query);
     if (opts.json) {
-      console.log(JSON.stringify(results, null, 2));
+      printJson(results);
     } else {
       if (results.results.length === 0) {
         console.log('No products found.');
@@ -53,15 +95,16 @@ program
 const cart = program.command('cart').description('Cart management');
 
 cart
-  .command('show')
-  .description('Show the current cart')
+  .command('get')
+  .alias('show')
+  .description('Get the current cart')
   .option('--json', 'Output raw JSON')
-  .action(async (opts: { json?: boolean }) => {
+  .action(async (opts: JsonOption) => {
     const client = createClient();
     await client.login();
     const c = await client.getCart();
     if (opts.json) {
-      console.log(JSON.stringify(c, null, 2));
+      printJson(c);
     } else {
       console.log(`Cart total: ${c.total_price} ${c.currency} (${c.item_count} items)`);
       for (const item of c.items) {
@@ -93,18 +136,20 @@ cart
 // ---------------------------------------------------------------------------
 // orders
 // ---------------------------------------------------------------------------
-program
-  .command('orders')
+const orders = program.command('orders').description('Order history');
+
+orders
+  .command('list')
   .description('List past orders')
   .option('--page <n>', 'Page number', '1')
   .option('--json', 'Output raw JSON')
-  .action(async (opts: { page?: string; json?: boolean }) => {
+  .action(async (opts: { page?: string } & JsonOption) => {
     const client = createClient();
     await client.login();
     const page = parseInt(opts.page ?? '1', 10);
     const orders = await client.getOrders(page);
     if (opts.json) {
-      console.log(JSON.stringify(orders, null, 2));
+      printJson(orders);
     } else {
       console.log(`Showing page ${page} of ${Math.ceil(orders.count / 20)} (${orders.count} total)`);
       for (const o of orders.results) {
@@ -114,20 +159,50 @@ program
   });
 
 // ---------------------------------------------------------------------------
-// delivery-slots
+// lists
 // ---------------------------------------------------------------------------
-program
-  .command('delivery-slots')
-  .description('List available delivery slots')
+const lists = program.command('lists').description('Saved shopping lists');
+
+lists
+  .command('list')
+  .description('List saved shopping lists')
   .option('--json', 'Output raw JSON')
-  .action(async (opts: { json?: boolean }) => {
+  .action(async (opts: JsonOption) => {
     const client = createClient();
     await client.login();
-    const slots = await client.getDeliverySlots();
+    const shoppingLists = await client.getShoppingLists();
     if (opts.json) {
-      console.log(JSON.stringify(slots, null, 2));
+      printJson(shoppingLists);
+      return;
+    }
+
+    if (shoppingLists.length === 0) {
+      console.log('No shopping lists found.');
+      return;
+    }
+
+    for (const list of shoppingLists) {
+      console.log(`[${list.id}] ${list.name} (${list.items.length} items)`);
+    }
+  });
+
+// ---------------------------------------------------------------------------
+// slots
+// ---------------------------------------------------------------------------
+const slots = program.command('slots').alias('delivery-slots').description('Delivery slot helpers');
+
+slots
+  .command('list')
+  .description('List available delivery slots')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: JsonOption) => {
+    const client = createClient();
+    await client.login();
+    const deliverySlots = await client.getDeliverySlots();
+    if (opts.json) {
+      printJson(deliverySlots);
     } else {
-      const available = slots.filter((s: OdaDeliverySlot) => s.is_available);
+      const available = deliverySlots.filter((s: OdaDeliverySlot) => s.is_available);
       if (available.length === 0) {
         console.log('No available delivery slots.');
       } else {
