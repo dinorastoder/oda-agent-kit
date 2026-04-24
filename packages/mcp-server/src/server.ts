@@ -73,7 +73,9 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_search_products',
     {
       description: 'Search Oda grocery for products matching a query string.',
-      inputSchema: { query: z.string().min(1).describe('The search term, e.g. "oat milk"') },
+      inputSchema: z.object({
+        query: z.string().min(1).describe('The search term, e.g. "oat milk"'),
+      }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async ({ query }) => createJsonResult(await client.searchProducts(query)),
@@ -83,9 +85,9 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_product',
     {
       description: 'Retrieve a single Oda product by product ID.',
-      inputSchema: {
+      inputSchema: z.object({
         product_id: z.number().int().positive().describe('The Oda product ID'),
-      },
+      }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async ({ product_id }) => createJsonResult(await client.getProduct(product_id)),
@@ -95,9 +97,9 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_product_image',
     {
       description: 'Retrieve the image metadata for a single Oda product.',
-      inputSchema: {
+      inputSchema: z.object({
         product_id: z.number().int().positive().describe('The Oda product ID'),
-      },
+      }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async ({ product_id }) => {
@@ -123,9 +125,9 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_orders',
     {
       description: 'Retrieve a page of past Oda orders.',
-      inputSchema: {
+      inputSchema: z.object({
         page: z.number().int().positive().default(1).describe('Page number (default: 1)'),
-      },
+      }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async ({ page }) => createJsonResult(await client.getOrders(page)),
@@ -135,9 +137,9 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_order_details',
     {
       description: 'Retrieve a single Oda order by order ID.',
-      inputSchema: {
+      inputSchema: z.object({
         order_id: z.number().int().positive().describe('The Oda order ID'),
-      },
+      }),
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async ({ order_id }) => createJsonResult(await client.getOrder(order_id)),
