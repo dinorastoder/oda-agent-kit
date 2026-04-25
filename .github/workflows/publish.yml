@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       dist_tag:
-        description: 'npm dist-tag to publish under (latest / beta / alpha / next)'
+        description: 'npm dist-tag to publish under (latest / rc / beta / alpha)'
         required: true
         default: 'latest'
         type: choice

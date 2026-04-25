@@ -19,9 +19,17 @@ The repo publishes four scoped public packages:
 All packages use the `@oda-agent` npm scope. Scoped packages default to **private**
 on npm, so every `npm publish` command must include `--access public`.
 
-Each package ships only its compiled output — the `"files"` field in each
-`package.json` is set to `["dist"]`, so source files, tests, and configs are
-never included in the published tarball.
+Each package ships only compiled output. The `"files"` field in each
+`package.json` controls what is included in the published tarball:
+
+| Package | Published files |
+|---------|----------------|
+| `@oda-agent/core` | `dist/` |
+| `@oda-agent/cli` | `dist/` |
+| `@oda-agent/mcp-server` | `dist/` |
+| `@oda-agent/openclaw-plugin` | `dist/`, `openclaw.plugin.json`, `skills/` |
+
+Source files, tests, and `tsconfig.json` are never included.
 
 ---
 
@@ -32,10 +40,15 @@ when publishing:
 
 - Running `npm publish` from the **repo root** without a `--workspace` flag
   will fail because the root `package.json` is `"private": true`.
-- Each package must be published individually using `--workspace=<package-name>`.
-- Workspace-local cross-dependencies (e.g. `"@oda-agent/core": "*"`) are resolved
-  to real semver ranges at publish time by `npm pack`. The published tarballs
-  contain resolved, pinned versions — not `"*"`.
+- Each package must be published individually. Both the workspace path form
+  (`--workspace=packages/core`) and the package-name form
+  (`--workspace=@oda-agent/core`) work; the examples below use the path form.
+- Workspace-local cross-dependencies currently use `"*"` (plain npm range, **not**
+  the `workspace:` protocol). The published tarball will therefore contain `"*"` as
+  the core dependency version, meaning any published version of `@oda-agent/core`
+  satisfies the requirement. To get deterministic pinning at publish time, migrate
+  to explicit version ranges (e.g. `"^0.2.0"`) or the `workspace:^` protocol before
+  each release.
 - Always build (`npm run build`) **before** publishing so that `dist/` is up to date.
 
 ---
@@ -104,8 +117,10 @@ MAJOR.MINOR.PATCH
 | Bug fix / patch | `0.1.0` → `0.1.1` |
 
 Keep **all four packages at the same version** to avoid cross-package confusion.
-Update every `package.json` together before publishing (this is automated in the
-GitHub workflow described below).
+Before tagging or running the publish workflow, manually update the `version` field
+in every `package.json` to the target version. The publish workflow does **not**
+bump versions automatically — it only builds and publishes whatever version is
+already set in `package.json`.
 
 ### Pre-release versions for testing
 
@@ -158,7 +173,7 @@ triggered two ways:
 1. **Tag push** — push a tag matching `v*` (e.g. `v0.2.0` or `v0.2.0-beta.1`)
    and the workflow publishes automatically.
 2. **Manual dispatch** — go to _Actions → Publish packages → Run workflow_ in the
-   GitHub UI and choose the dist-tag (`latest`, `beta`, `alpha`, `next`).
+   GitHub UI and choose the dist-tag (`latest`, `rc`, `beta`, `alpha`).
 
 The workflow builds all packages and publishes them in the correct order using the
 `NPM_TOKEN` secret that must be set in the repository's _Settings → Secrets_.
