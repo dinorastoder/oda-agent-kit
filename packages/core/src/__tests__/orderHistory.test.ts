@@ -124,7 +124,7 @@ describe('getHouseholdStaples', () => {
 
   it('includes products bought in at least 2 orders', () => {
     const staples = getHouseholdStaples(fixture);
-    const ids = staples.map((p) => p.productId).sort();
+    const ids = staples.map((p) => p.productId).sort((a, b) => a - b);
 
     // Products 1, 2, 3, 4 each appear in ≥2 orders
     expect(ids).toEqual([1, 2, 3, 4]);
