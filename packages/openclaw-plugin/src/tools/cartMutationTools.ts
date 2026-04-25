@@ -7,7 +7,7 @@
  *
  * Tools exposed:
  *  - addToCart      — add a single product to the cart
- *  - removeFromCart — remove a single product from the cart
+ *  - removeFromCart — remove a cart item by its cart-item ID (cart.items[].id)
  *  - clearCart      — remove all items from the cart
  *  - prepareCart    — bulk-add all items from a ShoppingList to the cart
  *
@@ -48,16 +48,19 @@ export async function addToCart(
 }
 
 /**
- * Remove `productId` from the cart entirely.
+ * Remove a cart item by its cart-item ID (`cart.items[].id`).
+ *
+ * Note: `cartItemId` is the ID of the cart line item returned by `getCart`,
+ * NOT the product ID. Obtain it from `cart.items[].id` before calling.
  *
  * Requires explicit user confirmation before calling.
  */
 export async function removeFromCart(
   client: OdaClient,
-  productId: number,
+  cartItemId: number,
 ): Promise<CartMutationResult> {
-  await client.removeFromCart(productId);
-  return { summary: `Removed product #${productId} from cart.` };
+  await client.removeFromCart(cartItemId);
+  return { summary: `Removed cart item #${cartItemId} from cart.` };
 }
 
 /**
@@ -71,7 +74,7 @@ export async function clearCart(client: OdaClient): Promise<CartMutationResult> 
 }
 
 /**
- * Add every item in `list` to the cart in a single operation.
+ * Add every item in `list` to the cart, sequentially one item at a time.
  *
  * Requires explicit user confirmation before calling. The caller should show
  * the full shopping list to the user and wait for approval.

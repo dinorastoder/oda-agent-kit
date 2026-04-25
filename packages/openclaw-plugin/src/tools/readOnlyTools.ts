@@ -9,13 +9,14 @@
  *  - getCart          — read the current shopping cart
  *  - getOrders        — read paginated order history
  *  - getDeliverySlots — list available delivery time slots
+ *  - getShoppingLists — list the user's saved shopping lists
  *
  * Higher-level helpers (buildShoppingList, analyseOrderHistory,
  * findCheapestDeliverySlot) are implemented in plugin.ts and compose
  * these primitives without performing any writes.
  */
 
-import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot } from '@oda-agent/core';
+import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot, OdaShoppingList } from '@oda-agent/core';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -69,4 +70,11 @@ export async function getOrders(
  */
 export async function getDeliverySlots(client: OdaClient): Promise<OdaDeliverySlot[]> {
   return client.getDeliverySlots();
+}
+
+/**
+ * List the authenticated user's saved shopping lists.
+ */
+export async function getShoppingLists(client: OdaClient): Promise<OdaShoppingList[]> {
+  return client.getShoppingLists();
 }

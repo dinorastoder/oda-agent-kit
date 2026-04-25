@@ -27,6 +27,10 @@
           "description": "List available delivery time slots."
         },
         {
+          "name": "getShoppingLists",
+          "description": "List the user's saved shopping lists."
+        },
+        {
           "name": "analyseOrderHistory",
           "description": "Analyse past orders and return a summary of frequently ordered products."
         },
@@ -55,7 +59,7 @@
         },
         {
           "name": "removeFromCart",
-          "description": "Remove a product from the cart. Requires explicit user confirmation before use."
+          "description": "Remove an item from the cart by cart-item ID from getCart (`cart.items[].id`). Requires explicit user confirmation before use."
         },
         {
           "name": "clearCart",

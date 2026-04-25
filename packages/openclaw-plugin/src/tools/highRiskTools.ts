@@ -36,6 +36,6 @@ export function placeOrder(): never {
   throw new Error(
     'placeOrder is not implemented. ' +
       'Final order placement is out of scope for v0 of the Oda shopping assistant. ' +
-      'See packages/openclaw-plugin/src/tools/highRiskTools.ts for details.',
+      'See the OpenClaw plugin manifest (openclaw.plugin.json) for supported tool capabilities.',
   );
 }

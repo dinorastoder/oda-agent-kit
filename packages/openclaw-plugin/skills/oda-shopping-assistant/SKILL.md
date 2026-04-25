@@ -31,6 +31,7 @@ These tools are safe to invoke without user confirmation. They observe but do no
 | `getCart` | Read the current shopping cart |
 | `getOrders` | Fetch paginated order history |
 | `getDeliverySlots` | List available delivery time slots |
+| `getShoppingLists` | List the user's saved shopping lists |
 | `buildShoppingList` | Resolve plain-text queries into a structured shopping list |
 | `analyseOrderHistory` | Summarise past orders and frequently bought products |
 | `findCheapestDeliverySlot` | Find the cheapest available delivery slot (read-only) |
@@ -43,7 +44,7 @@ These tools modify the shopping cart. They must be **explicitly enabled** by the
 |------|-------------|
 | `prepareCart` | Bulk-add all items from a shopping list to the cart |
 | `addToCart` | Add a single product to the cart |
-| `removeFromCart` | Remove a product from the cart |
+| `removeFromCart` | Remove a cart item by cart-item ID (`cart.items[].id`) |
 | `clearCart` | Remove all items from the cart |
 
 ### High-risk tools (not implemented in v0)
