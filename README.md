@@ -15,8 +15,8 @@ All Oda business logic belongs here.  Adapter packages depend on this package an
 ```ts
 import { OdaClient } from "@oda-agent/core";
 
-const client = new OdaClient({ sessionFile: ".oda-session.json" });
-const products = await client.searchProducts({ query: "milk", limit: 5 });
+const client = new OdaClient({ credentials: { email, password } });
+const products = await client.searchProducts("milk");
 ```
 
 ### `@oda-agent/cli`
@@ -27,9 +27,9 @@ Terminal commands for local debugging and manual workflows.
 npm install -g @oda-agent/cli
 
 oda search "milk"
-oda cart
-oda orders --limit 5
-oda slots
+oda cart get
+oda orders list --page 1
+oda slots list
 ```
 
 ### `@oda-agent/mcp-server`
@@ -38,10 +38,10 @@ MCP stdio server exposing tool-style operations for model clients (e.g. Claude D
 
 ```bash
 # In your MCP client config, point to:
-node node_modules/@oda-agent/mcp-server/dist/index.js
+node node_modules/@oda-agent/mcp-server/dist/main.js
 ```
 
-Exposes read-only and cart-mutation tools.  See [Tool Contracts](docs/tool-contracts.md) for the full list.
+Exposes read-only tools.  See [Tool Contracts](docs/tool-contracts.md) for the full list.
 
 ### `@oda-agent/openclaw-plugin`
 

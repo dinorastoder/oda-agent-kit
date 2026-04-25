@@ -98,7 +98,7 @@ No confirmation required.
 - `oda_get_orders`
 - `oda_get_cart`
 - `oda_get_delivery_slots`
-- `oda_get_lists`
+- `oda_get_shopping_lists`
 - `oda_get_household_staples`
 
 ### Level 1 — Cart mutation

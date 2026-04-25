@@ -13,7 +13,7 @@
 
 | Level | Category | Tools | Confirmation required |
 |-------|----------|-------|-----------------------|
-| 0 | Read-only | `oda_search_products`, `oda_get_orders`, `oda_get_cart`, `oda_get_delivery_slots`, `oda_get_lists`, `oda_get_household_staples` | None |
+| 0 | Read-only | `oda_search_products`, `oda_get_orders`, `oda_get_cart`, `oda_get_delivery_slots`, `oda_get_shopping_lists`, `oda_get_household_staples` | None |
 | 1 | Cart mutation | `oda_add_to_cart`, `oda_remove_from_cart`, `oda_update_quantity`, `oda_apply_list_to_cart` | Standard — show product name, quantity, price, cart delta |
 | 2 | Delivery mutation | `oda_reserve_delivery_slot`, `oda_change_delivery_slot` | Stronger — show date, time window, fee, reservation behaviour |
 | 3 | Final order | `oda_place_order` (and variants) | Out of scope for v0 — do not implement |
@@ -32,7 +32,7 @@ Tools:
 | `oda_get_orders` | Fetch past order history |
 | `oda_get_cart` | Read the current cart contents |
 | `oda_get_delivery_slots` | List available delivery slots |
-| `oda_get_lists` | Read saved shopping lists |
+| `oda_get_shopping_lists` | Read saved shopping lists |
 | `oda_get_household_staples` | Derive frequently-bought items from order history |
 
 ### Level 1 — Cart mutation
@@ -78,7 +78,7 @@ The confirmation message must show:
 
 Out of scope for v0.
 
-Do not implement `placeOrder` in v0.
+Do not implement `oda_place_order` in v0.
 
 The following tools must **not** be added until a deliberate v1 decision is made:
 
