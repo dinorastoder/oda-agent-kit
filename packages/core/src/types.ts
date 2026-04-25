@@ -117,7 +117,8 @@ export type CartPlanItemSource =
   | 'recipe'
   | 'explicit_request'
   | 'substitute'
-  | 'staple_rule';
+  | 'staple_rule'
+  | 'current_cart';
 
 /** A single item in a proposed cart plan. */
 export interface CartPlanItem {
