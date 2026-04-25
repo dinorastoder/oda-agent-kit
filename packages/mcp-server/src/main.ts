@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import 'dotenv/config';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { OdaClient } from '@oda-agent/core';
 import { createOdaMcpServer } from './server.js';
@@ -46,5 +45,10 @@ export async function runCli(env: NodeJS.ProcessEnv = process.env): Promise<void
 }
 
 if (require.main === module) {
-  void runCli();
+  void import('dotenv/config')
+    .then(() => runCli())
+    .catch((err: unknown) => {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    });
 }

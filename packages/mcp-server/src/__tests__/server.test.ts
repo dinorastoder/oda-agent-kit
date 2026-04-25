@@ -100,6 +100,7 @@ describe('createOdaMcpServer', () => {
 
     try {
       const { tools } = await mcpClient.listTools();
+      const toolsByName = new Map(tools.map((tool) => [tool.name, tool]));
 
       expect(tools.map((tool) => tool.name)).toEqual([...READ_ONLY_TOOL_NAMES]);
       expect(tools).toHaveLength(READ_ONLY_TOOL_NAMES.length);
@@ -109,6 +110,21 @@ describe('createOdaMcpServer', () => {
         expect(tool.annotations?.readOnlyHint).toBe(true);
         expect(tool.annotations?.destructiveHint).toBe(false);
         expect(tool.annotations?.idempotentHint).toBe(true);
+      }
+
+      for (const toolName of [
+        'oda_auth_status',
+        'oda_get_cart',
+        'oda_get_shopping_lists',
+        'oda_get_delivery_slots',
+      ] as const) {
+        expect(toolsByName.get(toolName)?.inputSchema).toEqual(
+          expect.objectContaining({
+            additionalProperties: false,
+            properties: {},
+            type: 'object',
+          }),
+        );
       }
     } finally {
       await Promise.all([mcpClient.close(), server.close()]);

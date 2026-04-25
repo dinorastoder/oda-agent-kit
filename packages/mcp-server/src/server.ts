@@ -32,6 +32,8 @@ const READ_ONLY_TOOL_ANNOTATIONS = {
   idempotentHint: true,
 } as const;
 
+const EMPTY_INPUT_SCHEMA = z.object({});
+
 function createJsonResult(payload: unknown) {
   return {
     content: [
@@ -58,6 +60,7 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_auth_status',
     {
       description: 'Report whether the MCP server has Oda credentials configured and authenticated.',
+      inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async () =>
@@ -116,6 +119,7 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_cart',
     {
       description: 'Retrieve the current Oda shopping cart.',
+      inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async () => createJsonResult(await client.getCart()),
@@ -149,6 +153,7 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_shopping_lists',
     {
       description: 'Retrieve saved Oda shopping lists.',
+      inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async () => createJsonResult(await client.getShoppingLists()),
@@ -158,6 +163,7 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     'oda_get_delivery_slots',
     {
       description: 'Retrieve Oda delivery slot availability.',
+      inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },
     async () => createJsonResult(await client.getDeliverySlots()),
