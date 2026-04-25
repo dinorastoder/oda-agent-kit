@@ -1,4 +1,5 @@
 export { OdaApiError, OdaClient, OdaSchemaError } from './client.js';
+export { analyzeOrderHistory, getHouseholdStaples, normalizeOrder } from './orderHistory.js';
 export {
   OdaAvailabilitySchema,
   OdaCartItemSchema,
@@ -20,6 +21,8 @@ export {
   buildUrl,
 } from './utils.js';
 export type {
+  FrequencyCategory,
+  HouseholdPreference,
   OdaAvailability,
   OdaCart,
   OdaCartItem,
@@ -42,4 +45,7 @@ export type {
   OdaSessionStore,
   OdaShoppingList,
   OdaShoppingListItem,
+  Order,
+  OrderItem,
+  StapleRule,
 } from './types.js';
