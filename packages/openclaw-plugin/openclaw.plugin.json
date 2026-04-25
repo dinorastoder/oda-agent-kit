@@ -1,0 +1,84 @@
+{
+  "name": "oda-shopping-assistant",
+  "version": "0.1.0",
+  "description": "Oda grocery shopping assistant — safe cart planning, order history analysis, and delivery slot discovery.",
+  "author": "oda-agent-kit",
+  "license": "MIT",
+  "toolGroups": [
+    {
+      "name": "read-only",
+      "description": "Safe, read-only tools for browsing products, cart, orders, and delivery slots.",
+      "enabled": true,
+      "tools": [
+        {
+          "name": "searchProducts",
+          "description": "Search for products in the Oda catalogue by keyword."
+        },
+        {
+          "name": "getCart",
+          "description": "Retrieve the current shopping cart."
+        },
+        {
+          "name": "getOrders",
+          "description": "Fetch paginated order history."
+        },
+        {
+          "name": "getDeliverySlots",
+          "description": "List available delivery time slots."
+        },
+        {
+          "name": "analyseOrderHistory",
+          "description": "Analyse past orders and return a summary of frequently ordered products."
+        },
+        {
+          "name": "buildShoppingList",
+          "description": "Resolve plain-text queries into a structured shopping list without mutating the cart."
+        },
+        {
+          "name": "findCheapestDeliverySlot",
+          "description": "Return the cheapest available delivery slot without booking it."
+        }
+      ]
+    },
+    {
+      "name": "cart-mutation",
+      "description": "Optional tools that modify the cart. Must be explicitly enabled by the user.",
+      "enabled": false,
+      "tools": [
+        {
+          "name": "prepareCart",
+          "description": "Add all items from a shopping list to the cart. Requires explicit user confirmation before use."
+        },
+        {
+          "name": "addToCart",
+          "description": "Add a single product to the cart. Requires explicit user confirmation before use."
+        },
+        {
+          "name": "removeFromCart",
+          "description": "Remove a product from the cart. Requires explicit user confirmation before use."
+        },
+        {
+          "name": "clearCart",
+          "description": "Remove all items from the cart. Requires explicit user confirmation before use."
+        }
+      ]
+    },
+    {
+      "name": "high-risk",
+      "description": "High-risk tools for order placement and payment. OUT OF SCOPE for v0 — not implemented.",
+      "enabled": false,
+      "tools": [
+        {
+          "name": "placeOrder",
+          "description": "NOT IMPLEMENTED. Final order placement is out of scope for v0. See highRiskTools.ts."
+        }
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "oda-shopping-assistant",
+      "path": "skills/oda-shopping-assistant/SKILL.md"
+    }
+  ]
+}
