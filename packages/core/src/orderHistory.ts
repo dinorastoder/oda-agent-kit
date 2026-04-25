@@ -15,7 +15,19 @@ const DEFAULT_STAPLE_RULE: StapleRule = {
 
 /** Convert a decimal price string (e.g. "19.90") to integer minor units (e.g. 1990). */
 function priceToCents(price: string): number {
-  return Math.round(parseFloat(price) * 100);
+  const normalizedPrice = price.trim();
+
+  if (!/^\d+(?:\.\d+)?$/.test(normalizedPrice)) {
+    throw new Error(`Invalid price string: "${price}"`);
+  }
+
+  const value = Number(normalizedPrice);
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid price value: "${price}"`);
+  }
+
+  return Math.round(value * 100);
 }
 
 /** Normalize a raw API order into the domain Order model. */
