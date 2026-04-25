@@ -39,8 +39,9 @@ const READ_ONLY_TOOL_ANNOTATIONS = {
   idempotentHint: true,
 } as const;
 
-export const EMPTY_INPUT_SCHEMA = z.object({});
+export const EMPTY_INPUT_SCHEMA = z.object({}).strict();
 export const EMPTY_INPUT_SCHEMA_JSON = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {},
   type: 'object',

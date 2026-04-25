@@ -118,9 +118,7 @@ describe('createOdaMcpServer', () => {
       }
 
       for (const toolName of ZERO_ARGUMENT_TOOL_NAMES) {
-        expect(toolsByName.get(toolName)?.inputSchema).toEqual(
-          expect.objectContaining(EMPTY_INPUT_SCHEMA_JSON),
-        );
+        expect(toolsByName.get(toolName)?.inputSchema).toEqual(EMPTY_INPUT_SCHEMA_JSON);
       }
     } finally {
       await Promise.all([mcpClient.close(), server.close()]);
