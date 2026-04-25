@@ -145,7 +145,7 @@ export function compareCartToUsual(
         name: cartItem.product.full_name,
         brand: cartItem.product.brand,
         quantity: cartItem.quantity,
-        source: 'explicit_request',
+        source: 'current_cart' as CartPlanItem['source'],
         reason: 'In cart but not part of usual purchases',
       });
     }
