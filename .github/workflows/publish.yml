@@ -1,0 +1,113 @@
+name: Publish packages
+
+# Trigger 1: push a semver tag  (e.g. v0.2.0 or v0.2.0-beta.1)
+# Trigger 2: manual dispatch from the Actions UI
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: 'npm dist-tag to publish under (latest / rc / beta / alpha)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - rc
+          - beta
+          - alpha
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # required for npm provenance
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build
+
+      - name: Determine dist-tag
+        id: tag
+        # On a tag push, derive the dist-tag from the version string.
+        #   v0.2.0-alpha.1 → alpha
+        #   v0.2.0-beta.2  → beta
+        #   v0.2.0-rc.1    → rc
+        #   v0.2.0         → latest
+        # On manual dispatch, use the user-supplied input.
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            TAG="${{ github.ref_name }}"        # e.g. v0.2.0-beta.1
+            VERSION="${TAG#v}"                  # strip leading 'v'
+            if [[ "$VERSION" == *"-alpha"* ]]; then
+              DIST_TAG="alpha"
+            elif [[ "$VERSION" == *"-beta"* ]]; then
+              DIST_TAG="beta"
+            elif [[ "$VERSION" == *"-rc"* ]]; then
+              DIST_TAG="rc"
+            else
+              DIST_TAG="latest"
+            fi
+          else
+            DIST_TAG="${{ inputs.dist_tag }}"
+          fi
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing with dist-tag: $DIST_TAG"
+
+      # Publish in dependency order: core must come before adapters.
+      - name: Publish @oda-agent/core
+        run: |
+          npm publish \
+            --workspace=packages/core \
+            --access public \
+            --tag "${{ steps.tag.outputs.dist_tag }}" \
+            --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @oda-agent/cli
+        run: |
+          npm publish \
+            --workspace=packages/cli \
+            --access public \
+            --tag "${{ steps.tag.outputs.dist_tag }}" \
+            --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @oda-agent/mcp-server
+        run: |
+          npm publish \
+            --workspace=packages/mcp-server \
+            --access public \
+            --tag "${{ steps.tag.outputs.dist_tag }}" \
+            --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @oda-agent/openclaw-plugin
+        run: |
+          npm publish \
+            --workspace=packages/openclaw-plugin \
+            --access public \
+            --tag "${{ steps.tag.outputs.dist_tag }}" \
+            --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
