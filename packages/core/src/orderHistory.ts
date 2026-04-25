@@ -152,8 +152,13 @@ export function getHouseholdStaples(
   lookback?: number,
   stapleRule: StapleRule = DEFAULT_STAPLE_RULE,
 ): HouseholdPreference[] {
+  const ordersByDeliveryDate = [...rawOrders].sort(
+    (a, b) => new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime(),
+  );
   const slice =
-    lookback !== undefined && lookback > 0 ? rawOrders.slice(-lookback) : rawOrders;
+    lookback !== undefined && lookback > 0
+      ? ordersByDeliveryDate.slice(-lookback)
+      : ordersByDeliveryDate;
 
   const all = analyzeOrderHistory(slice);
 
