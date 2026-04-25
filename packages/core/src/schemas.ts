@@ -139,3 +139,103 @@ export function createOdaPageSchema<T>(itemSchema: z.ZodType<T>): z.ZodType<OdaP
     results: z.array(itemSchema),
   });
 }
+
+// ---------------------------------------------------------------------------
+// Raw cart schemas — match the real Oda cart REST API (groups-based format)
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal product schema used within cart API responses.
+ * The cart API returns a subset of full product fields; unknown extra fields
+ * are passed through so we can still populate OdaProduct with defaults.
+ */
+const OdaRawCartProductSchema = z.object({
+  id: z.number().int(),
+  full_name: z.string(),
+  name: z.string(),
+  gross_price: z.string(),
+  gross_unit_price: z.string(),
+  unit_price_quantity_abbreviation: z.string(),
+}).passthrough();
+
+/** Raw cart item as returned by the Oda cart API. */
+export const OdaRawCartItemSchema = z.object({
+  /** Item-level identifier (called `item_id` in the Oda cart API). */
+  item_id: z.number().int(),
+  product: OdaRawCartProductSchema,
+  quantity: z.number().int(),
+  /** Line total price string (called `display_price_total` in the Oda cart API). */
+  display_price_total: z.string(),
+}).passthrough();
+
+const OdaRawCartGroupSchema = z.object({
+  items: z.array(OdaRawCartItemSchema),
+}).passthrough();
+
+/**
+ * Raw cart schema matching the real Oda cart API response structure.
+ * The API returns items grouped under `groups[]` rather than a flat `items[]`,
+ * and uses different field names (`total_gross_amount`, `product_quantity_count`).
+ */
+export const OdaRawCartSchema = z.object({
+  id: z.number().int(),
+  product_quantity_count: z.number().int(),
+  total_gross_amount: z.string(),
+  groups: z.array(OdaRawCartGroupSchema),
+}).passthrough();
+
+export type OdaRawCart = z.infer<typeof OdaRawCartSchema>;
+
+/**
+ * Normalise a raw Oda cart API response into the clean {@link OdaCart}
+ * interface used throughout the rest of this package.
+ *
+ * The raw API response groups items under `groups[].items[]` and uses
+ * `item_id`/`display_price_total` field names. This function flattens the
+ * groups and maps field names to match `OdaCartItem`.
+ */
+export function normalizeCart(raw: OdaRawCart): OdaCart {
+  const items: OdaCartItem[] = [];
+
+  for (const group of raw.groups) {
+    for (const item of group.items) {
+      const rawProduct = item.product as Record<string, unknown>;
+
+      const product: OdaProduct = {
+        id: item.product.id,
+        full_name: item.product.full_name,
+        name: item.product.name,
+        brand: typeof rawProduct['brand'] === 'string' ? rawProduct['brand'] : null,
+        front_url: typeof rawProduct['front_url'] === 'string' ? rawProduct['front_url'] : '',
+        gross_price: item.product.gross_price,
+        gross_unit_price: item.product.gross_unit_price,
+        unit_price_quantity_abbreviation: item.product.unit_price_quantity_abbreviation,
+        unit_price_quantity_name: typeof rawProduct['unit_price_quantity_name'] === 'string' ? rawProduct['unit_price_quantity_name'] : '',
+        currency: typeof rawProduct['currency'] === 'string' ? rawProduct['currency'] : 'NOK',
+        is_available: typeof rawProduct['is_available'] === 'boolean' ? rawProduct['is_available'] : true,
+        is_sponsored: typeof rawProduct['is_sponsored'] === 'boolean' ? rawProduct['is_sponsored'] : false,
+        promoted_product: typeof rawProduct['promoted_product'] === 'boolean' ? rawProduct['promoted_product'] : false,
+        images: Array.isArray(rawProduct['images']) ? (rawProduct['images'] as OdaProductImage[]) : [],
+        discount: rawProduct['discount'] != null ? (rawProduct['discount'] as OdaDiscount) : null,
+        availability: rawProduct['availability'] != null
+          ? (rawProduct['availability'] as OdaAvailability)
+          : { is_available: true, description: null },
+      };
+
+      items.push({
+        id: item.item_id,
+        product,
+        quantity: item.quantity,
+        line_price: item.display_price_total,
+      });
+    }
+  }
+
+  return {
+    id: raw.id,
+    items,
+    total_price: raw.total_gross_amount,
+    currency: 'NOK',
+    item_count: raw.product_quantity_count,
+  };
+}

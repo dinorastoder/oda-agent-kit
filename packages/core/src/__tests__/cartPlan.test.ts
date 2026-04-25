@@ -1,11 +1,12 @@
 import { buildCartPlan, compareCartToUsual, findSubstitutes } from '../cartPlan';
 import type { OdaCart, OdaOrder, OdaShoppingList } from '../types';
+import { normalizeCart, OdaRawCartSchema } from '../schemas';
 import cartFixture from './fixtures/cart.json';
 import ordersHistoryFixture from './fixtures/orders-history.json';
 import shoppingListsFixture from './fixtures/shopping-lists.json';
 
 const orders = ordersHistoryFixture as OdaOrder[];
-const cart = cartFixture as OdaCart;
+const cart: OdaCart = normalizeCart(OdaRawCartSchema.parse(cartFixture));
 const savedLists = shoppingListsFixture as OdaShoppingList[];
 
 // ---------------------------------------------------------------------------

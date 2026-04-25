@@ -12,11 +12,15 @@ export {
   OdaProductImageAssetSchema,
   OdaProductImageSchema,
   OdaProductSchema,
+  OdaRawCartItemSchema,
+  OdaRawCartSchema,
   OdaSearchResponseSchema,
   OdaShoppingListItemSchema,
   OdaShoppingListSchema,
   createOdaPageSchema,
+  normalizeCart,
 } from './schemas.js';
+export type { OdaRawCart } from './schemas.js';
 export {
   DEFAULT_BASE_URL,
   buildUrl,

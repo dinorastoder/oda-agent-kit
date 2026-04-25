@@ -7,7 +7,7 @@
  *
  * Tools exposed:
  *  - addToCart      — add a single product to the cart
- *  - removeFromCart — remove a cart item by its cart-item ID (cart.items[].id)
+ *  - removeFromCart — remove a cart item by its product ID (cart.items[].product.id)
  *  - clearCart      — remove all items from the cart
  *  - prepareCart    — bulk-add all items from a ShoppingList to the cart
  *
@@ -48,19 +48,19 @@ export async function addToCart(
 }
 
 /**
- * Remove a cart item by its cart-item ID (`cart.items[].id`).
+ * Remove a product from the cart by its product ID (`cart.items[].product.id`).
  *
- * Note: `cartItemId` is the ID of the cart line item returned by `getCart`,
- * NOT the product ID. Obtain it from `cart.items[].id` before calling.
+ * Note: `productId` is the Oda product ID, NOT the cart line-item ID.
+ * The Oda API removes the item by setting its quantity to 0 via the product ID.
  *
  * Requires explicit user confirmation before calling.
  */
 export async function removeFromCart(
   client: OdaClient,
-  cartItemId: number,
+  productId: number,
 ): Promise<CartMutationResult> {
-  await client.removeFromCart(cartItemId);
-  return { summary: `Removed cart item #${cartItemId} from cart.` };
+  await client.removeFromCart(productId);
+  return { summary: `Removed product #${productId} from cart.` };
 }
 
 /**

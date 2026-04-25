@@ -1,13 +1,14 @@
-import { OdaClient } from '../client';
+import { OdaClient, OdaApiError } from '../client';
 import type { OdaHttpClient, OdaHttpResponse, OdaSessionStore } from '../types';
 import cartFixture from './fixtures/cart.json';
 import searchResponseFixture from './fixtures/search-response.json';
 
-function createJsonResponse(body: unknown, status = 200): OdaHttpResponse {
+function createJsonResponse(body: unknown, status = 200, cookies: Record<string, string> = {}): OdaHttpResponse {
   return {
     ok: status >= 200 && status < 300,
     status,
     json: jest.fn(async () => body),
+    getCookies: jest.fn(() => cookies),
   };
 }
 
@@ -25,14 +26,19 @@ describe('OdaClient', () => {
     expect(httpClient.request).not.toHaveBeenCalled();
   });
 
-  it('stores the session token on login', async () => {
+  it('stores the session token from login response cookies', async () => {
     const httpClient: OdaHttpClient = {
-      request: jest.fn(async () => createJsonResponse({ token: 'session-token' })),
+      request: jest.fn(async () =>
+        createJsonResponse({}, 200, { sessionid: 'session-cookie-value', csrftoken: 'csrf-abc' }),
+      ),
     };
     const sessionStore: OdaSessionStore = {
       getSessionToken: jest.fn(() => null),
       setSessionToken: jest.fn(),
       clearSessionToken: jest.fn(),
+      getCsrfToken: jest.fn(() => null),
+      setCsrfToken: jest.fn(),
+      clearCsrfToken: jest.fn(),
     };
     const client = new OdaClient({
       credentials: { email: 'test@example.com', password: 'secret' },
@@ -42,8 +48,30 @@ describe('OdaClient', () => {
 
     await client.login();
 
+    // Login POSTs to /user/login/ (no prefetch call since httpClient has no prefetch method)
     expect(httpClient.request).toHaveBeenCalledTimes(1);
-    expect(sessionStore.setSessionToken).toHaveBeenCalledWith('session-token');
+    expect((httpClient.request as jest.Mock).mock.calls[0][0]).toMatchObject({
+      method: 'POST',
+      path: '/user/login/',
+    });
+    expect(sessionStore.setSessionToken).toHaveBeenCalledWith('session-cookie-value');
+    expect(sessionStore.setCsrfToken).toHaveBeenCalledWith('csrf-abc');
+  });
+
+  it('throws OdaApiError when login response lacks a sessionid cookie', async () => {
+    const httpClient: OdaHttpClient = {
+      request: jest.fn(async () =>
+        // 200 OK but no sessionid in cookies
+        createJsonResponse({}, 200, { csrftoken: 'csrf-only' }),
+      ),
+    };
+    const client = new OdaClient({
+      credentials: { email: 'test@example.com', password: 'secret' },
+      httpClient,
+    });
+
+    await expect(client.login()).rejects.toThrow(OdaApiError);
+    await expect(client.login()).rejects.toThrow('missing session cookie');
   });
 
   it('parses typed responses through the configured HTTP client', async () => {
@@ -64,6 +92,7 @@ describe('OdaClient', () => {
     const cart = await client.getCart();
 
     expect(searchResponse.results[0]?.id).toBe(123);
+    // cart fixture is in the real API format (groups[]); getCart() normalises it
     expect(cart.items[0]?.quantity).toBe(2);
     expect(httpClient.request).toHaveBeenCalledTimes(2);
   });

@@ -105,6 +105,17 @@ docs/
 scripts/
 ```
 
+## Acknowledgements
+
+The Oda API endpoint behaviour documented and implemented here was verified against the working reference implementation in [**gbbirkisson/mcp-oda**](https://github.com/gbbirkisson/mcp-oda). That project's cookie-based authentication flow, CSRF handling, cart API format (`{items:[...]}` payload, `groups[]` response structure), and endpoint paths were used as the authoritative source of truth for the real Oda API.
+
+Key patterns adopted from that reference:
+
+- Login via `POST /api/v1/user/login/` with `{ username, password }` and CSRF cookie
+- Cart mutations via `POST /api/v1/cart/items/` with `{ items: [{ product_id, quantity }] }`
+- Cart clear via `POST /api/v1/cart/clear/`
+- Cart response normalised from `groups[].items[]` into a flat `items[]` array
+
 ## Planning artifacts
 
 The repository includes optional Copilot planning artifacts in:
@@ -113,3 +124,4 @@ The repository includes optional Copilot planning artifacts in:
 - `docs/github-issues/`
 
 They can be used to manage iterative implementation work, but they are not required for normal development.
+

@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import {
   createOdaPageSchema,
-  OdaCartSchema,
+  normalizeCart,
   OdaDeliverySlotSchema,
+  OdaRawCartSchema,
   OdaSearchResponseSchema,
   OdaShoppingListSchema,
 } from '../schemas';
@@ -21,11 +22,15 @@ describe('core schemas', () => {
     expect(parsed.results[0]?.full_name).toBe('Oatly Oat Drink 1L');
   });
 
-  it('parses cart fixtures', () => {
-    const parsed = OdaCartSchema.parse(cartFixture);
+  it('parses cart fixtures and normalises groups into items', () => {
+    const raw = OdaRawCartSchema.parse(cartFixture);
+    const parsed = normalizeCart(raw);
 
     expect(parsed.item_count).toBe(2);
     expect(parsed.items[0]?.product.id).toBe(123);
+    expect(parsed.items[0]?.quantity).toBe(2);
+    expect(parsed.total_price).toBe('39.80');
+    expect(parsed.currency).toBe('NOK');
   });
 
   it('parses order page fixtures', () => {
