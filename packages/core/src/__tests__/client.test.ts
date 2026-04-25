@@ -1,4 +1,4 @@
-import { OdaClient } from '../client';
+import { OdaClient, OdaApiError } from '../client';
 import type { OdaHttpClient, OdaHttpResponse, OdaSessionStore } from '../types';
 import cartFixture from './fixtures/cart.json';
 import searchResponseFixture from './fixtures/search-response.json';
@@ -48,14 +48,30 @@ describe('OdaClient', () => {
 
     await client.login();
 
-    // Login POSTs to /api/v1/user/login/ (no prefetch call since httpClient has no prefetch method)
+    // Login POSTs to /user/login/ (no prefetch call since httpClient has no prefetch method)
     expect(httpClient.request).toHaveBeenCalledTimes(1);
     expect((httpClient.request as jest.Mock).mock.calls[0][0]).toMatchObject({
       method: 'POST',
-      path: '/api/v1/user/login/',
+      path: '/user/login/',
     });
     expect(sessionStore.setSessionToken).toHaveBeenCalledWith('session-cookie-value');
     expect(sessionStore.setCsrfToken).toHaveBeenCalledWith('csrf-abc');
+  });
+
+  it('throws OdaApiError when login response lacks a sessionid cookie', async () => {
+    const httpClient: OdaHttpClient = {
+      request: jest.fn(async () =>
+        // 200 OK but no sessionid in cookies
+        createJsonResponse({}, 200, { csrftoken: 'csrf-only' }),
+      ),
+    };
+    const client = new OdaClient({
+      credentials: { email: 'test@example.com', password: 'secret' },
+      httpClient,
+    });
+
+    await expect(client.login()).rejects.toThrow(OdaApiError);
+    await expect(client.login()).rejects.toThrow('missing session cookie');
   });
 
   it('parses typed responses through the configured HTTP client', async () => {

@@ -201,7 +201,7 @@ export class OdaClient {
    * Uses Oda's cookie-based login flow:
    * 1. GETs the login page (if the HTTP client supports `prefetch`) to acquire
    *    an initial CSRF token.
-   * 2. POSTs credentials to `/api/v1/user/login/` with `X-CSRFToken` header.
+   * 2. POSTs credentials to `/user/login/` with `X-CSRFToken` header.
    * 3. Extracts the `sessionid` cookie from the response and stores it.
    *
    * Call this before any authenticated method.
@@ -224,7 +224,7 @@ export class OdaClient {
     // Step 2: POST credentials — the real Oda API uses `username` (not `email`)
     const response = await this.httpClient.request({
       method: 'POST',
-      path: '/api/v1/user/login/',
+      path: '/user/login/',
       headers: this.mutationHeaders(),
       body: JSON.stringify({
         username: this.credentials.email,
@@ -233,18 +233,24 @@ export class OdaClient {
     });
 
     if (!response.ok) {
-      throw await this.createApiError('/api/v1/user/login/', response, 'Login failed');
+      throw await this.createApiError('/user/login/', response, 'Login failed');
     }
 
     // Step 3: persist session identity from response cookies
     const cookies = response.getCookies?.();
-    if (cookies) {
-      if (cookies['sessionid']) {
-        this.sessionStore.setSessionToken(cookies['sessionid']);
-      }
-      if (cookies['csrftoken']) {
-        this.sessionStore.setCsrfToken?.(cookies['csrftoken']);
-      }
+    if (!cookies) {
+      throw await this.createApiError('/user/login/', response, 'Login failed: missing response cookies');
+    }
+
+    const sessionId = cookies['sessionid'];
+    if (!sessionId) {
+      throw await this.createApiError('/user/login/', response, 'Login failed: missing session cookie');
+    }
+
+    this.sessionStore.setSessionToken(sessionId);
+
+    if (cookies['csrftoken']) {
+      this.sessionStore.setCsrfToken?.(cookies['csrftoken']);
     }
   }
 
@@ -286,7 +292,10 @@ export class OdaClient {
     const cart = normalizeCart(raw);
     const item = cart.items.find((i) => i.product.id === productId);
     if (!item) {
-      throw new OdaApiError(0, `Product ${productId} not found in cart after adding`);
+      throw new OdaApiError(
+        500,
+        `POST /cart/items/ succeeded but product ${productId} was not found in the returned cart`,
+      );
     }
     return item;
   }
