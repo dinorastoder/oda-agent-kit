@@ -159,10 +159,16 @@ export function getHouseholdStaples(
     lookback !== undefined && lookback > 0
       ? ordersByDeliveryDate.slice(-lookback)
       : ordersByDeliveryDate;
+  const totalOrders = slice.length;
 
   const all = analyzeOrderHistory(slice);
 
-  return all.filter(
-    (p) => p.confidence >= stapleRule.minFrequencyRatio && p.orderCount >= stapleRule.minOrderCount,
-  );
+  return all.filter((p) => {
+    const frequencyRatio = totalOrders > 0 ? p.orderCount / totalOrders : 0;
+
+    return (
+      frequencyRatio >= stapleRule.minFrequencyRatio &&
+      p.orderCount >= stapleRule.minOrderCount
+    );
+  });
 }
