@@ -231,6 +231,11 @@ export interface OdaHttpResponse {
   ok: boolean;
   status: number;
   json(): Promise<unknown>;
+  /**
+   * Return cookies from the response's Set-Cookie headers as a name→value map.
+   * Only available when the HTTP client tracks cookies (e.g. NodeFetchHttpClient).
+   */
+  getCookies?(): Record<string, string>;
 }
 
 /** HTTP client abstraction for Oda API requests. */
@@ -243,6 +248,10 @@ export interface OdaSessionStore {
   getSessionToken(): string | null;
   setSessionToken(token: string): void;
   clearSessionToken(): void;
+  /** Optional CSRF token storage — only required for cookie-based auth. */
+  getCsrfToken?(): string | null;
+  setCsrfToken?(token: string): void;
+  clearCsrfToken?(): void;
 }
 
 /** Configuration options for the OdaClient. */
@@ -250,6 +259,12 @@ export interface OdaClientOptions {
   credentials?: OdaCredentials;
   /** Override the base API URL. Defaults to https://oda.com/api/v1 */
   baseUrl?: string;
+  /**
+   * URL that the client will GET before login to acquire a CSRF token.
+   * Defaults to https://oda.com/no/user/login/
+   * Only used when the HTTP client supports a `prefetch` method (NodeFetchHttpClient).
+   */
+  csrfPageUrl?: string;
   /** Override the HTTP transport used by the client. */
   httpClient?: OdaHttpClient;
   /** Override how the client stores session tokens. */
