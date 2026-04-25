@@ -115,8 +115,8 @@ export interface OrderItem {
   name: string;
   brand: string | null;
   quantity: number;
-  /** Line price in minor currency units (e.g. øre). */
-  linePriceCents: number;
+  /** Line price in minor currency units (e.g. øre for NOK). */
+  linePriceMinorUnits: number;
 }
 
 /** Normalized order derived from an OdaOrder. */
@@ -124,8 +124,8 @@ export interface Order {
   id: number;
   status: string;
   deliveryDate: string;
-  /** Total price in minor currency units (e.g. øre). */
-  totalPriceCents: number;
+  /** Total price in minor currency units (e.g. øre for NOK). */
+  totalPriceMinorUnits: number;
   currency: string;
   items: OrderItem[];
 }

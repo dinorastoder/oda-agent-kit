@@ -14,7 +14,7 @@ const DEFAULT_STAPLE_RULE: StapleRule = {
 };
 
 /** Convert a decimal price string (e.g. "19.90") to integer minor units (e.g. 1990). */
-function priceToCents(price: string): number {
+function priceToMinorUnits(price: string): number {
   const normalizedPrice = price.trim();
 
   if (!/^\d+(?:\.\d+)?$/.test(normalizedPrice)) {
@@ -37,14 +37,14 @@ export function normalizeOrder(raw: OdaOrder): Order {
     name: item.product.full_name,
     brand: item.product.brand,
     quantity: item.quantity,
-    linePriceCents: priceToCents(item.line_price),
+    linePriceMinorUnits: priceToMinorUnits(item.line_price),
   }));
 
   return {
     id: raw.id,
     status: raw.status,
     deliveryDate: raw.delivery_date,
-    totalPriceCents: priceToCents(raw.total_price),
+    totalPriceMinorUnits: priceToMinorUnits(raw.total_price),
     currency: raw.currency,
     items,
   };

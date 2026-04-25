@@ -11,7 +11,7 @@ describe('normalizeOrder', () => {
     expect(normalized.id).toBe(1001);
     expect(normalized.status).toBe('delivered');
     expect(normalized.deliveryDate).toBe('2026-01-07');
-    expect(normalized.totalPriceCents).toBe(24560);
+    expect(normalized.totalPriceMinorUnits).toBe(24560);
     expect(normalized.currency).toBe('NOK');
   });
 
@@ -24,10 +24,19 @@ describe('normalizeOrder', () => {
       name: 'Oatly Oat Drink 1L',
       brand: 'Oatly',
       quantity: 2,
-      linePriceCents: 3980,
+      linePriceMinorUnits: 3980,
     });
     // Product 3 (Bananas) has null brand
     expect(normalized.items[2]?.brand).toBeNull();
+  });
+
+  it('throws for a non-numeric price string', () => {
+    const badOrder: OdaOrder = {
+      ...fixture[0]!,
+      total_price: 'not-a-number',
+    };
+
+    expect(() => normalizeOrder(badOrder)).toThrow('Invalid price string');
   });
 });
 
@@ -110,6 +119,72 @@ describe('analyzeOrderHistory', () => {
     const second = analyzeOrderHistory(fixture);
 
     expect(first).toEqual(second);
+  });
+
+  it('counts a product only once per order when it appears as multiple line items', () => {
+    // Two line items for the same product (id=1) in a single order.
+    const duplicateLineOrder: OdaOrder = {
+      id: 9999,
+      status: 'delivered',
+      delivery_date: '2026-02-01',
+      total_price: '59.70',
+      currency: 'NOK',
+      items: [
+        {
+          product: {
+            id: 1,
+            full_name: 'Oatly Oat Drink 1L',
+            brand: 'Oatly',
+            name: 'Oat Drink',
+            front_url: '/products/1',
+            gross_price: '19.90',
+            gross_unit_price: '19.90',
+            unit_price_quantity_abbreviation: 'l',
+            unit_price_quantity_name: 'liter',
+            currency: 'NOK',
+            is_available: true,
+            is_sponsored: false,
+            promoted_product: false,
+            images: [],
+            discount: null,
+            availability: { is_available: true, description: null },
+          },
+          quantity: 2,
+          line_price: '39.80',
+        },
+        {
+          product: {
+            id: 1,
+            full_name: 'Oatly Oat Drink 1L',
+            brand: 'Oatly',
+            name: 'Oat Drink',
+            front_url: '/products/1',
+            gross_price: '19.90',
+            gross_unit_price: '19.90',
+            unit_price_quantity_abbreviation: 'l',
+            unit_price_quantity_name: 'liter',
+            currency: 'NOK',
+            is_available: true,
+            is_sponsored: false,
+            promoted_product: false,
+            images: [],
+            discount: null,
+            availability: { is_available: true, description: null },
+          },
+          quantity: 1,
+          line_price: '19.90',
+        },
+      ],
+    };
+
+    const preferences = analyzeOrderHistory([duplicateLineOrder]);
+
+    expect(preferences).toHaveLength(1);
+    // orderCount must be 1, not 2, even though the product appears twice in items
+    expect(preferences[0]?.orderCount).toBe(1);
+    // totalQuantity should still accumulate both line items: 2 + 1 = 3
+    expect(preferences[0]?.averageQuantity).toBe(3);
+    expect(preferences[0]?.confidence).toBe(1);
   });
 });
 
