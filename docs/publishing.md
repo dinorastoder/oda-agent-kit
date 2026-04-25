@@ -1,8 +1,13 @@
 # Publishing Plan
 
+This document describes how the `oda-agent-kit` workspace packages are published to npm,
+including publishing order, versioning, pre-release strategy, and install examples.
+
+---
+
 ## Packages
 
-The repo should publish these npm packages:
+The repo publishes four scoped public packages:
 
 ```text
 @oda-agent/core
@@ -11,48 +16,232 @@ The repo should publish these npm packages:
 @oda-agent/openclaw-plugin
 ```
 
+All packages use the `@oda-agent` npm scope. Scoped packages default to **private**
+on npm, so every `npm publish` command must include `--access public`.
+
+Each package ships only its compiled output — the `"files"` field in each
+`package.json` is set to `["dist"]`, so source files, tests, and configs are
+never included in the published tarball.
+
+---
+
+## npm workspace behavior
+
+This repo is an npm workspace monorepo. A few important behaviors to keep in mind
+when publishing:
+
+- Running `npm publish` from the **repo root** without a `--workspace` flag
+  will fail because the root `package.json` is `"private": true`.
+- Each package must be published individually using `--workspace=<package-name>`.
+- Workspace-local cross-dependencies (e.g. `"@oda-agent/core": "*"`) are resolved
+  to real semver ranges at publish time by `npm pack`. The published tarballs
+  contain resolved, pinned versions — not `"*"`.
+- Always build (`npm run build`) **before** publishing so that `dist/` is up to date.
+
+---
+
 ## Publishing order
 
-Publish `core` first:
+`core` must always be published first because the adapter packages
+(`cli`, `mcp-server`, `openclaw-plugin`) depend on it:
 
 ```bash
-npm publish --workspace=@oda-agent/core --access public
-npm publish --workspace=@oda-agent/cli --access public
-npm publish --workspace=@oda-agent/mcp-server --access public
-npm publish --workspace=@oda-agent/openclaw-plugin --access public
+# 1. Build everything
+npm run build
+
+# 2. Publish in dependency order
+npm publish --workspace=packages/core --access public
+npm publish --workspace=packages/cli --access public
+npm publish --workspace=packages/mcp-server --access public
+npm publish --workspace=packages/openclaw-plugin --access public
 ```
 
-## Why separate packages?
+---
 
-- CLI users should not install MCP/OpenClaw dependencies.
-- MCP users should not install CLI/OpenClaw dependencies.
-- OpenClaw users should not depend on the CLI.
-- `core` can be reused by future adapters.
+## Why `core` is published separately
+
+- Adapter packages (`cli`, `mcp-server`, `openclaw-plugin`) each bring their
+  own heavy dependencies (commander, @modelcontextprotocol/sdk, etc.).
+- Consumers who only need the Oda API client types should be able to install
+  `@oda-agent/core` without pulling in CLI or MCP tooling.
+- `core` can be reused by future adapters without any circular dependencies.
+- Publishing `core` independently lets library authors extend the toolkit without
+  depending on any specific runtime (Node CLI, stdio server, OpenClaw, etc.).
+
+---
+
+## CLI `bin` behavior
+
+`@oda-agent/cli` registers a binary named **`oda`** via the `"bin"` field in its
+`package.json`:
+
+```json
+{
+  "bin": {
+    "oda": "dist/bin.js"
+  }
+}
+```
+
+When a user installs the package globally, npm places `oda` on their `PATH`.
+When installed locally (e.g. in a project), npm creates `node_modules/.bin/oda`
+which can be invoked via `npx oda` or as an npm script.
+
+---
+
+## Versioning
+
+All packages in this repo follow [Semantic Versioning](https://semver.org/):
+
+```
+MAJOR.MINOR.PATCH
+```
+
+| Change type | Example bump |
+|-------------|-------------|
+| Breaking API change | `0.1.0` → `1.0.0` |
+| New backwards-compatible feature | `0.1.0` → `0.2.0` |
+| Bug fix / patch | `0.1.0` → `0.1.1` |
+
+Keep **all four packages at the same version** to avoid cross-package confusion.
+Update every `package.json` together before publishing (this is automated in the
+GitHub workflow described below).
+
+### Pre-release versions for testing
+
+Before a stable release, publish a tagged pre-release to let users test in
+Claude Desktop / OpenClaw without affecting the `latest` dist-tag:
+
+| Stage | Version example | npm dist-tag |
+|-------|-----------------|--------------|
+| Early preview | `0.2.0-alpha.1` | `alpha` |
+| Feature-complete but untested | `0.2.0-beta.1` | `beta` |
+| Release candidate | `0.2.0-rc.1` | `rc` |
+| Stable | `0.2.0` | `latest` |
+
+Publish a pre-release using the `--tag` flag (this prevents the pre-release
+from becoming the default `latest` version):
+
+```bash
+npm publish --workspace=packages/core --access public --tag beta
+npm publish --workspace=packages/cli --access public --tag beta
+npm publish --workspace=packages/mcp-server --access public --tag beta
+npm publish --workspace=packages/openclaw-plugin --access public --tag beta
+```
+
+Install a specific pre-release tag:
+
+```bash
+# Install beta version
+npm install @oda-agent/cli@beta
+
+# Install a specific pre-release version
+npm install @oda-agent/mcp-server@0.2.0-beta.1
+```
+
+Promote a pre-release to `latest` when it is ready:
+
+```bash
+npm dist-tag add @oda-agent/core@0.2.0-rc.1 latest
+npm dist-tag add @oda-agent/cli@0.2.0-rc.1 latest
+npm dist-tag add @oda-agent/mcp-server@0.2.0-rc.1 latest
+npm dist-tag add @oda-agent/openclaw-plugin@0.2.0-rc.1 latest
+```
+
+---
+
+## GitHub Actions publish workflow
+
+A reusable publish workflow lives at `.github/workflows/publish.yml`. It can be
+triggered two ways:
+
+1. **Tag push** — push a tag matching `v*` (e.g. `v0.2.0` or `v0.2.0-beta.1`)
+   and the workflow publishes automatically.
+2. **Manual dispatch** — go to _Actions → Publish packages → Run workflow_ in the
+   GitHub UI and choose the dist-tag (`latest`, `beta`, `alpha`, `next`).
+
+The workflow builds all packages and publishes them in the correct order using the
+`NPM_TOKEN` secret that must be set in the repository's _Settings → Secrets_.
+
+See `.github/workflows/publish.yml` for the full configuration.
+
+---
 
 ## Example installs
 
-CLI:
+### CLI (global install)
 
 ```bash
 npm install -g @oda-agent/cli
 oda --help
 ```
 
-MCP server:
+### CLI (local / project install)
+
+```bash
+npm install --save-dev @oda-agent/cli
+npx oda --help
+```
+
+### MCP server (Claude Desktop)
+
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "oda": {
       "command": "npx",
-      "args": ["@oda-agent/mcp-server"]
+      "args": ["-y", "@oda-agent/mcp-server"],
+      "env": {
+        "ODA_EMAIL": "your@email.com",
+        "ODA_PASSWORD": "your-password"
+      }
     }
   }
 }
 ```
 
-OpenClaw plugin:
+### MCP server (pinned version)
+
+```json
+{
+  "mcpServers": {
+    "oda": {
+      "command": "npx",
+      "args": ["-y", "@oda-agent/mcp-server@0.2.0"]
+    }
+  }
+}
+```
+
+### MCP server (pre-release / beta)
+
+```json
+{
+  "mcpServers": {
+    "oda": {
+      "command": "npx",
+      "args": ["-y", "@oda-agent/mcp-server@beta"]
+    }
+  }
+}
+```
+
+### OpenClaw plugin
 
 ```bash
 openclaw plugins install @oda-agent/openclaw-plugin
+```
+
+### OpenClaw plugin (pre-release)
+
+```bash
+openclaw plugins install @oda-agent/openclaw-plugin@beta
+```
+
+### Core library only (for custom integrations)
+
+```bash
+npm install @oda-agent/core
 ```
