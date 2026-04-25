@@ -22,6 +22,18 @@ Adapters live in separate packages:
         └── @oda-agent/openclaw-plugin
 ```
 
+Adapter packages must not import each other:
+
+```text
+# Forbidden
+@oda-agent/cli            → @oda-agent/mcp-server
+@oda-agent/cli            → @oda-agent/openclaw-plugin
+@oda-agent/mcp-server     → @oda-agent/cli
+@oda-agent/mcp-server     → @oda-agent/openclaw-plugin
+@oda-agent/openclaw-plugin → @oda-agent/cli
+@oda-agent/openclaw-plugin → @oda-agent/mcp-server
+```
+
 ## Package responsibilities
 
 ### `@oda-agent/core`
@@ -39,7 +51,7 @@ Owns:
 - delivery slots
 - household preference analysis
 
-Does not own:
+Does **not** own:
 
 - CLI output formatting
 - MCP transport
@@ -63,6 +75,8 @@ Owns:
 - MCP prompts
 - JSON-RPC stdio server
 
+All log output must go to **stderr**, not stdout.
+
 ### `@oda-agent/openclaw-plugin`
 
 Owns:
@@ -74,29 +88,39 @@ Owns:
 
 ## Tool risk levels
 
-### Safe/read-only
+See [Safety Model](safety-model.md) and [Tool Contracts](tool-contracts.md) for full details on confirmation requirements and input/output shapes.
 
-- auth status
-- search
-- product details
-- product images
-- cart read
-- order history
-- lists
-- slots
+### Level 0 — Safe/read-only
 
-### Medium/cart mutation
+No confirmation required.
 
-- add items
-- update quantity
-- remove items
-- apply list to cart
-- reserve slot
+- `oda_search_products`
+- `oda_get_orders`
+- `oda_get_cart`
+- `oda_get_delivery_slots`
+- `oda_get_lists`
+- `oda_get_household_staples`
 
-### High/final order
+### Level 1 — Cart mutation
 
-- place order
-- change submitted order
-- add to existing order
+Requires standard confirmation.
+
+- `oda_add_to_cart`
+- `oda_update_quantity`
+- `oda_remove_from_cart`
+- `oda_apply_list_to_cart`
+
+### Level 2 — Delivery mutation
+
+Requires stronger confirmation.
+
+- `oda_reserve_delivery_slot`
+- `oda_change_delivery_slot`
+
+### Level 3 — Final order (out of scope for v0)
+
+- `oda_place_order`
+- `oda_change_submitted_order`
+- `oda_add_to_existing_order`
 
 High-risk tools are intentionally out of scope for v0.
