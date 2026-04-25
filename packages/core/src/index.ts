@@ -1,4 +1,5 @@
 export { OdaApiError, OdaClient, OdaSchemaError } from './client.js';
+export { buildCartPlan, compareCartToUsual, findSubstitutes } from './cartPlan.js';
 export { analyzeOrderHistory, getHouseholdStaples, normalizeOrder } from './orderHistory.js';
 export {
   OdaAvailabilitySchema,
@@ -21,6 +22,11 @@ export {
   buildUrl,
 } from './utils.js';
 export type {
+  CartComparison,
+  CartPlan,
+  CartPlanInput,
+  CartPlanItem,
+  CartPlanItemSource,
   FrequencyCategory,
   HouseholdPreference,
   OdaAvailability,

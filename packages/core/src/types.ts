@@ -106,6 +106,67 @@ export interface OdaCredentials {
   password: string;
 }
 
+// ---------------------------------------------------------------------------
+// Cart planning
+// ---------------------------------------------------------------------------
+
+/** The source that triggered inclusion of an item in a CartPlan. */
+export type CartPlanItemSource =
+  | 'order_history'
+  | 'saved_list'
+  | 'recipe'
+  | 'explicit_request'
+  | 'substitute'
+  | 'staple_rule';
+
+/** A single item in a proposed cart plan. */
+export interface CartPlanItem {
+  productId: number;
+  name: string;
+  brand: string | null;
+  quantity: number;
+  /** Why this item was included in the plan. */
+  source: CartPlanItemSource;
+  /** Human-readable explanation suitable for confirmation messages. */
+  reason: string;
+}
+
+/** A proposed cart plan — no real cart is mutated when this is created. */
+export interface CartPlan {
+  items: CartPlanItem[];
+  /** Short summary suitable for agent confirmation messages. */
+  summary: string;
+}
+
+/** Input required to build a CartPlan. */
+export interface CartPlanInput {
+  /** Raw orders used to derive household staples. */
+  orders: OdaOrder[];
+  /** Saved shopping lists to pull items from. */
+  savedLists?: OdaShoppingList[];
+  /** Items explicitly requested by the user. */
+  explicitRequests?: Array<{
+    productId: number;
+    name: string;
+    brand: string | null;
+    quantity: number;
+  }>;
+  /** Override the default staple qualification rule. */
+  stapleRule?: StapleRule;
+  /** Maximum number of most-recent orders to consider for staple detection. */
+  lookback?: number;
+}
+
+/** Result of comparing the current cart to the household's usual purchases. */
+export interface CartComparison {
+  /** Items in the current cart that the household normally buys. */
+  usual: CartPlanItem[];
+  /** Items the household normally buys that are NOT in the current cart. */
+  missing: CartPlanItem[];
+  /** Items in the current cart that are not part of the household's usual purchases. */
+  extra: CartPlanItem[];
+}
+
 /** Frequency category for a household staple product. */
 export type FrequencyCategory = 'weekly' | 'biweekly' | 'monthly' | 'occasional';
 
