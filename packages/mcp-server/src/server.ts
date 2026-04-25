@@ -14,6 +14,13 @@ export const READ_ONLY_TOOL_NAMES = [
   'oda_get_delivery_slots',
 ] as const;
 
+export const ZERO_ARGUMENT_TOOL_NAMES = [
+  'oda_auth_status',
+  'oda_get_cart',
+  'oda_get_shopping_lists',
+  'oda_get_delivery_slots',
+] as const;
+
 export interface OdaMcpServerOptions {
   authStatus?: {
     configured: boolean;
@@ -32,7 +39,12 @@ const READ_ONLY_TOOL_ANNOTATIONS = {
   idempotentHint: true,
 } as const;
 
-const EMPTY_INPUT_SCHEMA = z.object({});
+export const EMPTY_INPUT_SCHEMA = z.object({});
+export const EMPTY_INPUT_SCHEMA_JSON = {
+  additionalProperties: false,
+  properties: {},
+  type: 'object',
+} as const;
 
 function createJsonResult(payload: unknown) {
   return {

@@ -1,6 +1,11 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { createOdaMcpServer, READ_ONLY_TOOL_NAMES } from '../server';
+import {
+  createOdaMcpServer,
+  EMPTY_INPUT_SCHEMA_JSON,
+  READ_ONLY_TOOL_NAMES,
+  ZERO_ARGUMENT_TOOL_NAMES,
+} from '../server';
 
 function getTextResult(result: unknown): string {
   const content = (result as { content?: unknown }).content as Array<{ type: string; text?: string }> | undefined;
@@ -112,18 +117,9 @@ describe('createOdaMcpServer', () => {
         expect(tool.annotations?.idempotentHint).toBe(true);
       }
 
-      for (const toolName of [
-        'oda_auth_status',
-        'oda_get_cart',
-        'oda_get_shopping_lists',
-        'oda_get_delivery_slots',
-      ] as const) {
+      for (const toolName of ZERO_ARGUMENT_TOOL_NAMES) {
         expect(toolsByName.get(toolName)?.inputSchema).toEqual(
-          expect.objectContaining({
-            additionalProperties: false,
-            properties: {},
-            type: 'object',
-          }),
+          expect.objectContaining(EMPTY_INPUT_SCHEMA_JSON),
         );
       }
     } finally {
