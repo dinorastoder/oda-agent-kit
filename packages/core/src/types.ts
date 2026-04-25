@@ -106,6 +106,53 @@ export interface OdaCredentials {
   password: string;
 }
 
+/** Frequency category for a household staple product. */
+export type FrequencyCategory = 'weekly' | 'biweekly' | 'monthly' | 'occasional';
+
+/** Normalized order item derived from an OdaOrder. */
+export interface OrderItem {
+  productId: number;
+  name: string;
+  brand: string | null;
+  quantity: number;
+  /** Line price in minor currency units (e.g. øre). */
+  linePriceCents: number;
+}
+
+/** Normalized order derived from an OdaOrder. */
+export interface Order {
+  id: number;
+  status: string;
+  deliveryDate: string;
+  /** Total price in minor currency units (e.g. øre). */
+  totalPriceCents: number;
+  currency: string;
+  items: OrderItem[];
+}
+
+/** Household preference for a product, derived from order history analysis. */
+export interface HouseholdPreference {
+  productId: number;
+  name: string;
+  brand: string | null;
+  averageQuantity: number;
+  /** Number of orders in the analysed window that contained this product. */
+  orderCount: number;
+  frequency: FrequencyCategory;
+  /** 0–1 confidence score based on how consistently the product appears across orders. */
+  confidence: number;
+  /** Human-readable explanation, e.g. "Bought in 8 of last 10 orders". */
+  reason: string;
+}
+
+/** Rule that configures which products qualify as household staples. */
+export interface StapleRule {
+  /** Minimum number of orders in which the product must appear. */
+  minOrderCount: number;
+  /** Minimum ratio of appearances to total orders (0–1). */
+  minFrequencyRatio: number;
+}
+
 /** Supported HTTP methods for the Oda client. */
 export type OdaHttpMethod = 'GET' | 'POST' | 'DELETE';
 

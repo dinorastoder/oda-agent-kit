@@ -1,0 +1,374 @@
+[
+  {
+    "id": 1001,
+    "status": "delivered",
+    "delivery_date": "2026-01-07",
+    "total_price": "245.60",
+    "currency": "NOK",
+    "items": [
+      {
+        "product": {
+          "id": 1,
+          "full_name": "Oatly Oat Drink 1L",
+          "brand": "Oatly",
+          "name": "Oat Drink",
+          "front_url": "/products/1",
+          "gross_price": "19.90",
+          "gross_unit_price": "19.90",
+          "unit_price_quantity_abbreviation": "l",
+          "unit_price_quantity_name": "liter",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/1/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/1/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/1/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 2,
+        "line_price": "39.80"
+      },
+      {
+        "product": {
+          "id": 2,
+          "full_name": "Whole Grain Bread 750g",
+          "brand": "Fazer",
+          "name": "Whole Grain Bread",
+          "front_url": "/products/2",
+          "gross_price": "29.90",
+          "gross_unit_price": "29.90",
+          "unit_price_quantity_abbreviation": "stk",
+          "unit_price_quantity_name": "stykk",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/2/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/2/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/2/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "29.90"
+      },
+      {
+        "product": {
+          "id": 3,
+          "full_name": "Bananas 1kg",
+          "brand": null,
+          "name": "Bananas",
+          "front_url": "/products/3",
+          "gross_price": "14.90",
+          "gross_unit_price": "14.90",
+          "unit_price_quantity_abbreviation": "kg",
+          "unit_price_quantity_name": "kilogram",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/3/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/3/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/3/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "14.90"
+      }
+    ]
+  },
+  {
+    "id": 1002,
+    "status": "delivered",
+    "delivery_date": "2026-01-14",
+    "total_price": "198.40",
+    "currency": "NOK",
+    "items": [
+      {
+        "product": {
+          "id": 1,
+          "full_name": "Oatly Oat Drink 1L",
+          "brand": "Oatly",
+          "name": "Oat Drink",
+          "front_url": "/products/1",
+          "gross_price": "19.90",
+          "gross_unit_price": "19.90",
+          "unit_price_quantity_abbreviation": "l",
+          "unit_price_quantity_name": "liter",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/1/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/1/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/1/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 3,
+        "line_price": "59.70"
+      },
+      {
+        "product": {
+          "id": 2,
+          "full_name": "Whole Grain Bread 750g",
+          "brand": "Fazer",
+          "name": "Whole Grain Bread",
+          "front_url": "/products/2",
+          "gross_price": "29.90",
+          "gross_unit_price": "29.90",
+          "unit_price_quantity_abbreviation": "stk",
+          "unit_price_quantity_name": "stykk",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/2/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/2/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/2/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 2,
+        "line_price": "59.80"
+      },
+      {
+        "product": {
+          "id": 4,
+          "full_name": "Greek Yogurt 500g",
+          "brand": "Tine",
+          "name": "Greek Yogurt",
+          "front_url": "/products/4",
+          "gross_price": "24.90",
+          "gross_unit_price": "24.90",
+          "unit_price_quantity_abbreviation": "g",
+          "unit_price_quantity_name": "gram",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/4/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/4/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/4/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "24.90"
+      }
+    ]
+  },
+  {
+    "id": 1003,
+    "status": "delivered",
+    "delivery_date": "2026-01-21",
+    "total_price": "219.70",
+    "currency": "NOK",
+    "items": [
+      {
+        "product": {
+          "id": 1,
+          "full_name": "Oatly Oat Drink 1L",
+          "brand": "Oatly",
+          "name": "Oat Drink",
+          "front_url": "/products/1",
+          "gross_price": "19.90",
+          "gross_unit_price": "19.90",
+          "unit_price_quantity_abbreviation": "l",
+          "unit_price_quantity_name": "liter",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/1/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/1/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/1/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 2,
+        "line_price": "39.80"
+      },
+      {
+        "product": {
+          "id": 3,
+          "full_name": "Bananas 1kg",
+          "brand": null,
+          "name": "Bananas",
+          "front_url": "/products/3",
+          "gross_price": "14.90",
+          "gross_unit_price": "14.90",
+          "unit_price_quantity_abbreviation": "kg",
+          "unit_price_quantity_name": "kilogram",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/3/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/3/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/3/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 2,
+        "line_price": "29.80"
+      },
+      {
+        "product": {
+          "id": 5,
+          "full_name": "Free Range Eggs 6-pack",
+          "brand": null,
+          "name": "Free Range Eggs",
+          "front_url": "/products/5",
+          "gross_price": "39.90",
+          "gross_unit_price": "39.90",
+          "unit_price_quantity_abbreviation": "stk",
+          "unit_price_quantity_name": "stykk",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/5/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/5/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/5/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "39.90"
+      }
+    ]
+  },
+  {
+    "id": 1004,
+    "status": "delivered",
+    "delivery_date": "2026-01-28",
+    "total_price": "184.50",
+    "currency": "NOK",
+    "items": [
+      {
+        "product": {
+          "id": 1,
+          "full_name": "Oatly Oat Drink 1L",
+          "brand": "Oatly",
+          "name": "Oat Drink",
+          "front_url": "/products/1",
+          "gross_price": "19.90",
+          "gross_unit_price": "19.90",
+          "unit_price_quantity_abbreviation": "l",
+          "unit_price_quantity_name": "liter",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/1/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/1/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/1/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 2,
+        "line_price": "39.80"
+      },
+      {
+        "product": {
+          "id": 2,
+          "full_name": "Whole Grain Bread 750g",
+          "brand": "Fazer",
+          "name": "Whole Grain Bread",
+          "front_url": "/products/2",
+          "gross_price": "29.90",
+          "gross_unit_price": "29.90",
+          "unit_price_quantity_abbreviation": "stk",
+          "unit_price_quantity_name": "stykk",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/2/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/2/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/2/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "29.90"
+      },
+      {
+        "product": {
+          "id": 4,
+          "full_name": "Greek Yogurt 500g",
+          "brand": "Tine",
+          "name": "Greek Yogurt",
+          "front_url": "/products/4",
+          "gross_price": "24.90",
+          "gross_unit_price": "24.90",
+          "unit_price_quantity_abbreviation": "g",
+          "unit_price_quantity_name": "gram",
+          "currency": "NOK",
+          "is_available": true,
+          "is_sponsored": false,
+          "promoted_product": false,
+          "images": [
+            {
+              "thumbnail": { "url": "https://images.oda.com/4/thumb.jpg" },
+              "small_thumbnail": { "url": "https://images.oda.com/4/small.jpg" },
+              "large_thumbnail": { "url": "https://images.oda.com/4/large.jpg" }
+            }
+          ],
+          "discount": null,
+          "availability": { "is_available": true, "description": null }
+        },
+        "quantity": 1,
+        "line_price": "24.90"
+      }
+    ]
+  }
+]
