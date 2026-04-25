@@ -2,24 +2,22 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { OdaClient } from '@oda-agent/core';
 
-export const READ_ONLY_TOOL_NAMES = [
-  'oda_auth_status',
-  'oda_search_products',
-  'oda_get_product',
-  'oda_get_product_image',
-  'oda_get_cart',
-  'oda_get_orders',
-  'oda_get_order_details',
-  'oda_get_shopping_lists',
-  'oda_get_delivery_slots',
-] as const;
-
 export const ZERO_ARGUMENT_TOOL_NAMES = [
   'oda_auth_status',
   'oda_get_cart',
   'oda_get_shopping_lists',
   'oda_get_delivery_slots',
 ] as const;
+
+const PARAMETERIZED_TOOL_NAMES = [
+  'oda_search_products',
+  'oda_get_product',
+  'oda_get_product_image',
+  'oda_get_orders',
+  'oda_get_order_details',
+] as const;
+
+export const READ_ONLY_TOOL_NAMES = [...ZERO_ARGUMENT_TOOL_NAMES, ...PARAMETERIZED_TOOL_NAMES] as const;
 
 export interface OdaMcpServerOptions {
   authStatus?: {

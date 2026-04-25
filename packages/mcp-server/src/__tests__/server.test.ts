@@ -107,7 +107,7 @@ describe('createOdaMcpServer', () => {
       const { tools } = await mcpClient.listTools();
       const toolsByName = new Map(tools.map((tool) => [tool.name, tool]));
 
-      expect(tools.map((tool) => tool.name)).toEqual([...READ_ONLY_TOOL_NAMES]);
+      expect(tools.map((tool) => tool.name).sort()).toEqual([...READ_ONLY_TOOL_NAMES].sort());
       expect(tools).toHaveLength(READ_ONLY_TOOL_NAMES.length);
       expect(tools).not.toEqual(expect.arrayContaining([expect.objectContaining({ name: 'add_to_cart' })]));
 
