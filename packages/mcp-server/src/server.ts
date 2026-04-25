@@ -63,8 +63,8 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
     async () =>
       createJsonResult(
         options.authStatus ?? {
-          configured: true,
-          authenticated: true,
+          configured: false,
+          authenticated: false,
         },
       ),
   );
