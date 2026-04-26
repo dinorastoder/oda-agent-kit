@@ -114,11 +114,12 @@ export function register(api: OpenClawApi): void {
 
   async function ensureLoggedIn(): Promise<PluginRuntime> {
     const currentRuntime = await getRuntime();
-    const currentLoginPromise = loginPromise ?? currentRuntime.client.login();
-    loginPromise = currentLoginPromise;
+    if (loginPromise === null) {
+      loginPromise = currentRuntime.client.login();
+    }
 
     try {
-      await currentLoginPromise;
+      await loginPromise;
       return currentRuntime;
     } catch (error) {
       loginPromise = null;
