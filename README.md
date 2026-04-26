@@ -54,7 +54,8 @@ openclaw.registerPlugin(odaPlugin);
 ```
 
 Configure the plugin's `email` and `password` fields in OpenClaw before using
-the Oda tools.
+the Oda tools. Reload the plugin after changing those credentials so the new
+config is picked up.
 
 ## Safety model
 
