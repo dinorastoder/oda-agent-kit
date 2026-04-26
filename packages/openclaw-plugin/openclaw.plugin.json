@@ -1,7 +1,7 @@
 {
   "id": "@oda-agent/openclaw-plugin",
   "name": "oda-shopping-assistant",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Oda grocery shopping assistant — safe cart planning, order history analysis, and delivery slot discovery.",
   "author": "oda-agent-kit",
   "license": "MIT",
