@@ -88,29 +88,42 @@ function readConfiguredCredentials(config: Record<string, unknown>): PluginCrede
 }
 
 export function register(api: OpenClawApi): void {
-  let runtime: PluginRuntime | null = null;
+  let runtimePromise: Promise<PluginRuntime> | null = null;
   let loginPromise: Promise<void> | null = null;
 
-  function getRuntime(): PluginRuntime {
-    if (runtime === null) {
-      const credentials = readConfiguredCredentials(api.getConfig());
-      const client = new OdaClient({ credentials });
+  function getRuntime(): Promise<PluginRuntime> {
+    if (runtimePromise === null) {
+      runtimePromise = Promise.resolve()
+        .then(() => {
+          const credentials = readConfiguredCredentials(api.getConfig());
+          const client = new OdaClient({ credentials });
 
-      runtime = {
-        client,
-        plugin: createOpenClawPlugin(client),
-      };
+          return {
+            client,
+            plugin: createOpenClawPlugin(client),
+          };
+        })
+        .catch((error: unknown) => {
+          runtimePromise = null;
+          throw error;
+        });
     }
 
-    return runtime;
+    return runtimePromise;
   }
 
   async function ensureLoggedIn(): Promise<PluginRuntime> {
-    const currentRuntime = getRuntime();
+    const currentRuntime = await getRuntime();
     const currentLoginPromise = loginPromise ?? currentRuntime.client.login();
     loginPromise = currentLoginPromise;
-    await currentLoginPromise;
-    return currentRuntime;
+
+    try {
+      await currentLoginPromise;
+      return currentRuntime;
+    } catch (error) {
+      loginPromise = null;
+      throw error;
+    }
   }
 
   // ── Read-only tools ─────────────────────────────────────────────────────
