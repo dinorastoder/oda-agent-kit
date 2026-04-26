@@ -180,11 +180,72 @@ The workflow builds all packages and publishes them in the correct order using t
 
 See `.github/workflows/publish.yml` for the full configuration.
 
+### Setting up NPM_TOKEN
+
+Before running the publish workflow you must add an npm access token to the repo:
+
+1. Log in to [npmjs.com](https://www.npmjs.com) and go to
+   _Profile → Access Tokens → Generate New Token_.
+2. Choose **Granular Access Token** (or **Classic Token** with `Automation` type).
+3. Grant **Read and Write** (publish) permission for the `@oda-agent` scope.
+4. Copy the token.
+5. In the GitHub repository go to
+   _Settings → Secrets and variables → Actions → New repository secret_.
+6. Name: `NPM_TOKEN`, Value: the token you copied.
+
+The publish workflow reads this secret as `NODE_AUTH_TOKEN`.
+
+### Workflow jobs
+
+The publish workflow has two jobs:
+
+| Job | Purpose |
+|-----|---------|
+| `publish` | Builds all packages and publishes them to npm in dependency order |
+| `smoke-test` | Runs after `publish`; installs the just-published packages from npm in a fresh project and verifies key exports |
+
+The smoke-test job waits up to ~2 minutes for registry propagation before
+attempting the install. If the packages are not visible after that window, the
+job fails so you know to investigate.
+
+---
+
+## Smoke testing
+
+### Local smoke test (no npm access needed)
+
+Run this before every publish to catch broken dist/ artifacts or missing exports:
+
+```bash
+./scripts/local-smoke-test.sh
+```
+
+What it does:
+
+1. Builds all packages (`npm run build`).
+2. Packs `@oda-agent/core` and `@oda-agent/openclaw-plugin` into local tarballs
+   using `npm pack`.
+3. Creates a temporary standalone project that installs from the tarballs
+   (no workspace resolution — simulates a real consumer install).
+4. Verifies that `OdaClient` and `createOpenClawPlugin` are importable.
+
+### Post-publish smoke test (requires npm)
+
+After publishing, confirm the packages are correct on the registry:
+
+```bash
+./scripts/smoke-test.sh 0.1.0-alpha.1
+```
+
+Replace `0.1.0-alpha.1` with the version you just published.  
+This script installs from the live npm registry and verifies the same exports.
+
+This same check runs automatically as the `smoke-test` job in `publish.yml`
+immediately after every publish.
+
 ---
 
 ## Example installs
-
-### CLI (global install)
 
 ```bash
 npm install -g @oda-agent/cli
@@ -247,6 +308,14 @@ Add to your `claude_desktop_config.json`:
 
 ```bash
 openclaw plugins install @oda-agent/openclaw-plugin
+```
+
+To verify the installation succeeded, check that the plugin is listed and that
+the Oda tools are registered:
+
+```bash
+openclaw plugins list
+openclaw tools list | grep oda
 ```
 
 ### OpenClaw plugin (pre-release)
