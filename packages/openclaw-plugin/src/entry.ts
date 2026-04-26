@@ -89,7 +89,7 @@ function readConfiguredCredentials(config: Record<string, unknown>): PluginCrede
 
 export function register(api: OpenClawApi): void {
   let runtimePromise: Promise<PluginRuntime> | null = null;
-  let loginPromise: Promise<void> | null = null;
+  let authenticatedRuntimePromise: Promise<PluginRuntime> | null = null;
 
   function getRuntime(): Promise<PluginRuntime> {
     if (runtimePromise === null) {
@@ -113,16 +113,22 @@ export function register(api: OpenClawApi): void {
   }
 
   async function ensureLoggedIn(): Promise<PluginRuntime> {
-    const currentRuntime = await getRuntime();
-    if (loginPromise === null) {
-      loginPromise = currentRuntime.client.login();
+    if (authenticatedRuntimePromise === null) {
+      authenticatedRuntimePromise = getRuntime()
+        .then(async (runtime) => {
+          await runtime.client.login();
+          return runtime;
+        })
+        .catch((error: unknown) => {
+          authenticatedRuntimePromise = null;
+          throw error;
+        });
     }
 
     try {
-      await loginPromise;
-      return currentRuntime;
+      return await authenticatedRuntimePromise;
     } catch (error) {
-      loginPromise = null;
+      authenticatedRuntimePromise = null;
       throw error;
     }
   }

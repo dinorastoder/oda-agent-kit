@@ -82,8 +82,14 @@ describe('OpenClaw plugin entry', () => {
   });
 
   it('uses plugin config credentials when a tool is invoked', async () => {
-    const login = jest.fn().mockResolvedValue(undefined);
-    const getCart = jest.fn().mockResolvedValue({ items: [] });
+    const login = jest.spyOn(OdaClient.prototype, 'login').mockResolvedValue(undefined);
+    const getCart = jest.spyOn(OdaClient.prototype, 'getCart').mockResolvedValue({
+      id: 1,
+      items: [],
+      total_price: '0.00',
+      currency: 'NOK',
+      item_count: 0,
+    });
     const handlers = new Map<string, (params: unknown) => Promise<unknown>>();
 
     const mockApi: OpenClawApi = {
@@ -93,20 +99,20 @@ describe('OpenClaw plugin entry', () => {
       getConfig: () => ({ email: 'test@example.com', password: 'test-password' }),
     };
 
-    const originalLogin = OdaClient.prototype.login;
-    const originalGetCart = OdaClient.prototype.getCart;
-
-    OdaClient.prototype.login = login;
-    OdaClient.prototype.getCart = getCart;
-
     try {
       entry.register(mockApi);
-      await expect(handlers.get('getCart')?.({})).resolves.toEqual({ items: [] });
+      await expect(handlers.get('getCart')?.({})).resolves.toEqual({
+        id: 1,
+        items: [],
+        total_price: '0.00',
+        currency: 'NOK',
+        item_count: 0,
+      });
       expect(login).toHaveBeenCalledTimes(1);
       expect(getCart).toHaveBeenCalledTimes(1);
     } finally {
-      OdaClient.prototype.login = originalLogin;
-      OdaClient.prototype.getCart = originalGetCart;
+      login.mockRestore();
+      getCart.mockRestore();
     }
   });
 });
