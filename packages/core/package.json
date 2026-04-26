@@ -23,5 +23,9 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dinorastoder/oda-agent-kit"
+  },
   "license": "MIT"
 }
