@@ -10,14 +10,14 @@
     "properties": {
       "email": {
         "type": "string",
-        "description": "Your Oda.no account email address"
+        "description": "Your Oda.no account email address. Falls back to the ODA_EMAIL environment variable if omitted."
       },
       "password": {
         "type": "string",
-        "description": "Your Oda.no account password"
+        "description": "Your Oda.no account password. Falls back to the ODA_PASSWORD environment variable if omitted."
       }
     },
-    "required": ["email", "password"]
+    "required": []
   },
   "toolGroups": [
     {
