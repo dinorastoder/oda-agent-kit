@@ -46,7 +46,7 @@ cp "$SCRIPT_DIR/verify-imports.cjs" "$SMOKE_DIR/"
 cd "$SMOKE_DIR"
 
 echo "==> Running npm install from registry..."
-npm install --prefer-online --registry https://registry.npmjs.org
+npm install --prefer-online --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org
 
 echo "==> Verifying imports..."
 node verify-imports.cjs

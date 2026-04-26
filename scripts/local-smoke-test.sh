@@ -33,9 +33,9 @@ echo "==> Packing packages..."
 cd "$ROOT_DIR"
 
 CORE_TGZ="$PACK_DIR/$(npm pack --workspace=packages/core \
-  --pack-destination "$PACK_DIR" 2>/dev/null | tail -1)"
+  --pack-destination "$PACK_DIR" | tail -1)"
 PLUGIN_TGZ="$PACK_DIR/$(npm pack --workspace=packages/openclaw-plugin \
-  --pack-destination "$PACK_DIR" 2>/dev/null | tail -1)"
+  --pack-destination "$PACK_DIR" | tail -1)"
 
 echo "    core tarball:   $CORE_TGZ"
 echo "    plugin tarball: $PLUGIN_TGZ"

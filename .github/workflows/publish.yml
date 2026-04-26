@@ -141,26 +141,30 @@ jobs:
 
       - name: Wait for registry propagation
         # Give the npm registry up to ~2 minutes to make the new packages
-        # visible. Retry up to 6 times with 20-second pauses.
+        # visible. Check both @oda-agent/core and @oda-agent/openclaw-plugin
+        # so the install step doesn't race against a partially-propagated core.
+        # Retry up to 6 times with 20-second pauses.
         run: |
           VERSION="${{ needs.publish.outputs.version }}"
-          echo "Waiting for @oda-agent/openclaw-plugin@$VERSION to appear on npm..."
+          echo "Waiting for @oda-agent/core@$VERSION and @oda-agent/openclaw-plugin@$VERSION to appear on npm..."
           for attempt in 1 2 3 4 5 6; do
-            if npm view "@oda-agent/openclaw-plugin@$VERSION" version \
+            if npm view "@oda-agent/core@$VERSION" version \
+                --registry https://registry.npmjs.org 2>/dev/null \
+              && npm view "@oda-agent/openclaw-plugin@$VERSION" version \
                 --registry https://registry.npmjs.org 2>/dev/null; then
-              echo "Package is available (attempt $attempt)"
+              echo "Packages are available (attempt $attempt)"
               exit 0
             fi
-            echo "Attempt $attempt: not yet available — waiting 20 s"
+            echo "Attempt $attempt: packages not yet fully available — waiting 20 s"
             sleep 20
           done
-          echo "ERROR: @oda-agent/openclaw-plugin@$VERSION was not found on npm after 2 minutes" >&2
+          echo "ERROR: @oda-agent/core@$VERSION and/or @oda-agent/openclaw-plugin@$VERSION were not found on npm after 2 minutes" >&2
           exit 1
 
-      - name: Install and smoke-test @oda-agent/openclaw-plugin
-        # Create a minimal standalone project that depends on the newly
-        # published packages using their explicit version (no workspace *).
-        # This replicates what a consumer would do after 'npm install'.
+      - name: Install and smoke-test @oda-agent/openclaw-plugin (pinned core)
+        # Create a minimal standalone project that pins BOTH packages to the
+        # published version. This confirms the tarballs are importable as real
+        # npm dependencies (no workspace '*' resolution).
         run: |
           VERSION="${{ needs.publish.outputs.version }}"
           SMOKE_DIR="$(mktemp -d)"
@@ -170,7 +174,7 @@ jobs:
 
           cat > "$SMOKE_DIR/package.json" <<EOF
           {
-            "name": "smoke-test",
+            "name": "smoke-test-pinned",
             "version": "0.0.1",
             "private": true,
             "dependencies": {
@@ -183,5 +187,34 @@ jobs:
           cp scripts/verify-imports.cjs "$SMOKE_DIR/"
 
           cd "$SMOKE_DIR"
-          npm install --prefer-online --registry https://registry.npmjs.org
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org
+          node verify-imports.cjs
+
+      - name: Install and smoke-test @oda-agent/openclaw-plugin (unpinned core)
+        # Install only the plugin without pinning core — this mirrors what a
+        # real consumer does. The plugin declares "@oda-agent/core": "*" so npm
+        # will resolve whichever core version is available on the registry.
+        # This validates that the '*' dependency range works end-to-end.
+        run: |
+          VERSION="${{ needs.publish.outputs.version }}"
+          SMOKE_DIR="$(mktemp -d)"
+          trap 'rm -rf "$SMOKE_DIR"' EXIT
+
+          echo "Smoke dir: $SMOKE_DIR"
+
+          cat > "$SMOKE_DIR/package.json" <<EOF
+          {
+            "name": "smoke-test-unpinned",
+            "version": "0.0.1",
+            "private": true,
+            "dependencies": {
+              "@oda-agent/openclaw-plugin": "$VERSION"
+            }
+          }
+          EOF
+
+          cp scripts/verify-imports.cjs "$SMOKE_DIR/"
+
+          cd "$SMOKE_DIR"
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org
           node verify-imports.cjs
