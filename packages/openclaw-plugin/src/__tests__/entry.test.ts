@@ -73,7 +73,7 @@ describe('OpenClaw plugin entry', () => {
       getConfig: () => ({}),
     };
 
-    // Should not throw even with empty config (credentials come from env vars)
+    // Should not throw — credentials come from env vars
     expect(() => entry.register(mockApi)).not.toThrow();
     expect(registeredTools.length).toBeGreaterThan(0);
 
@@ -88,5 +88,25 @@ describe('OpenClaw plugin entry', () => {
     } else {
       process.env['ODA_PASSWORD'] = origPassword;
     }
+  });
+
+  it('register throws a descriptive error when no credentials are available', () => {
+    const origEmail = process.env['ODA_EMAIL'];
+    const origPassword = process.env['ODA_PASSWORD'];
+    delete process.env['ODA_EMAIL'];
+    delete process.env['ODA_PASSWORD'];
+
+    const mockApi: OpenClawApi = {
+      registerTool: jest.fn(),
+      getConfig: () => ({}),
+    };
+
+    expect(() => entry.register(mockApi)).toThrow(
+      /Oda credentials are required/,
+    );
+
+    // Restore env
+    if (origEmail !== undefined) process.env['ODA_EMAIL'] = origEmail;
+    if (origPassword !== undefined) process.env['ODA_PASSWORD'] = origPassword;
   });
 });

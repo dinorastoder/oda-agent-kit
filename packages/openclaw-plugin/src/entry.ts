@@ -78,6 +78,14 @@ const pluginEntry = definePluginEntry({
     const email = config.email ?? process.env['ODA_EMAIL'] ?? '';
     const password = config.password ?? process.env['ODA_PASSWORD'] ?? '';
 
+    if (!email || !password) {
+      throw new Error(
+        'Oda credentials are required. ' +
+          'Set the email and password fields in the plugin config, ' +
+          'or export the ODA_EMAIL and ODA_PASSWORD environment variables.',
+      );
+    }
+
     const client = new OdaClient({ credentials: { email, password } });
     const plugin = createOpenClawPlugin(client);
 
