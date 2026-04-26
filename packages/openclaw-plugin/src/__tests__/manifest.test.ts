@@ -1,0 +1,160 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+const MANIFEST_PATH = path.resolve(__dirname, '../../openclaw.plugin.json');
+
+// Minimal shape of a tool entry in a toolGroup
+interface ToolEntry {
+  name: string;
+  description: string;
+}
+
+// Minimal shape of a toolGroup entry
+interface ToolGroup {
+  name: string;
+  description: string;
+  enabled: boolean;
+  tools: ToolEntry[];
+}
+
+// Minimal shape of a skill entry
+interface SkillEntry {
+  name: string;
+  path: string;
+}
+
+// Full manifest shape we expect
+interface OpenClawManifest {
+  id: string;
+  configSchema: Record<string, unknown>;
+  toolGroups: ToolGroup[];
+  skills: SkillEntry[];
+  [key: string]: unknown;
+}
+
+function loadManifest(): OpenClawManifest {
+  const raw = fs.readFileSync(MANIFEST_PATH, 'utf-8');
+  return JSON.parse(raw) as OpenClawManifest;
+}
+
+describe('openclaw.plugin.json manifest', () => {
+  let manifest: OpenClawManifest;
+
+  beforeAll(() => {
+    manifest = loadManifest();
+  });
+
+  describe('required OpenClaw fields', () => {
+    it('has a non-empty id string', () => {
+      expect(typeof manifest.id).toBe('string');
+      expect(manifest.id.length).toBeGreaterThan(0);
+    });
+
+    it('has configSchema as a non-null object', () => {
+      expect(manifest.configSchema).not.toBeNull();
+      expect(typeof manifest.configSchema).toBe('object');
+      expect(Array.isArray(manifest.configSchema)).toBe(false);
+    });
+
+    it('configSchema is a valid JSON Schema object (has type field)', () => {
+      expect(manifest.configSchema.type).toBe('object');
+    });
+
+    it('configSchema.properties is an object', () => {
+      expect(manifest.configSchema.properties).toBeDefined();
+      expect(typeof manifest.configSchema.properties).toBe('object');
+      expect(Array.isArray(manifest.configSchema.properties)).toBe(false);
+    });
+
+    it('configSchema.properties contains email and password fields', () => {
+      const props = manifest.configSchema.properties as Record<string, unknown>;
+      expect(props.email).toBeDefined();
+      expect((props.email as Record<string, unknown>).type).toBe('string');
+      expect(props.password).toBeDefined();
+      expect((props.password as Record<string, unknown>).type).toBe('string');
+    });
+
+    it('configSchema.required lists email and password', () => {
+      expect(Array.isArray(manifest.configSchema.required)).toBe(true);
+      const required = manifest.configSchema.required as string[];
+      expect(required).toContain('email');
+      expect(required).toContain('password');
+    });
+  });
+
+  describe('toolGroups', () => {
+    it('has a toolGroups array', () => {
+      expect(Array.isArray(manifest.toolGroups)).toBe(true);
+      expect(manifest.toolGroups.length).toBeGreaterThan(0);
+    });
+
+    it('each toolGroup has required fields', () => {
+      for (const group of manifest.toolGroups) {
+        expect(typeof group.name).toBe('string');
+        expect(group.name.length).toBeGreaterThan(0);
+
+        expect(typeof group.description).toBe('string');
+        expect(group.description.length).toBeGreaterThan(0);
+
+        expect(typeof group.enabled).toBe('boolean');
+
+        expect(Array.isArray(group.tools)).toBe(true);
+      }
+    });
+
+    it('each tool has name and description', () => {
+      for (const group of manifest.toolGroups) {
+        for (const tool of group.tools) {
+          expect(typeof tool.name).toBe('string');
+          expect(tool.name.length).toBeGreaterThan(0);
+
+          expect(typeof tool.description).toBe('string');
+          expect(tool.description.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('has a read-only group enabled by default', () => {
+      const readOnly = manifest.toolGroups.find((g) => g.name === 'read-only');
+      expect(readOnly).toBeDefined();
+      expect(readOnly?.enabled).toBe(true);
+    });
+
+    it('has a cart-mutation group disabled by default', () => {
+      const cartMutation = manifest.toolGroups.find((g) => g.name === 'cart-mutation');
+      expect(cartMutation).toBeDefined();
+      expect(cartMutation?.enabled).toBe(false);
+    });
+
+    it('has a high-risk group disabled by default', () => {
+      const highRisk = manifest.toolGroups.find((g) => g.name === 'high-risk');
+      expect(highRisk).toBeDefined();
+      expect(highRisk?.enabled).toBe(false);
+    });
+  });
+
+  describe('skills', () => {
+    it('has a skills array', () => {
+      expect(Array.isArray(manifest.skills)).toBe(true);
+      expect(manifest.skills.length).toBeGreaterThan(0);
+    });
+
+    it('each skill has name and path', () => {
+      for (const skill of manifest.skills) {
+        expect(typeof skill.name).toBe('string');
+        expect(skill.name.length).toBeGreaterThan(0);
+
+        expect(typeof skill.path).toBe('string');
+        expect(skill.path.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('skill files exist on disk', () => {
+      const pluginRoot = path.resolve(__dirname, '../..');
+      for (const skill of manifest.skills) {
+        const skillPath = path.resolve(pluginRoot, skill.path);
+        expect(fs.existsSync(skillPath)).toBe(true);
+      }
+    });
+  });
+});

@@ -5,6 +5,20 @@
   "description": "Oda grocery shopping assistant — safe cart planning, order history analysis, and delivery slot discovery.",
   "author": "oda-agent-kit",
   "license": "MIT",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "description": "Your Oda.no account email address"
+      },
+      "password": {
+        "type": "string",
+        "description": "Your Oda.no account password"
+      }
+    },
+    "required": ["email", "password"]
+  },
   "toolGroups": [
     {
       "name": "read-only",
