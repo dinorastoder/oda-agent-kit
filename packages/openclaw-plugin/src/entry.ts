@@ -15,6 +15,7 @@ import { OdaClient } from '@oda-agent/core';
 import type { SearchProductsParams, GetOrdersParams } from './tools/readOnlyTools.js';
 import * as readOnlyTools from './tools/readOnlyTools.js';
 import * as cartMutationTools from './tools/cartMutationTools.js';
+import { readEnvironmentCredentials } from './credentials.js';
 import { createOpenClawPlugin } from './plugin.js';
 import type { ShoppingList } from './plugin.js';
 
@@ -63,28 +64,9 @@ function definePluginEntry(entry: OpenClawPluginEntry): OpenClawPluginEntry {
   return entry;
 }
 
-interface PluginCredentials {
-  email: string;
-  password: string;
-}
-
 interface PluginRuntime {
   client: OdaClient;
   plugin: ReturnType<typeof createOpenClawPlugin>;
-}
-
-function readConfiguredCredentials(config: Record<string, unknown>): PluginCredentials {
-  const email = typeof config.email === 'string' ? config.email.trim() : '';
-  const password = typeof config.password === 'string' ? config.password.trim() : '';
-
-  if (!email || !password) {
-    throw new Error(
-      'Oda credentials are required before using this plugin. ' +
-        'Set both the email and password fields in the plugin config.',
-    );
-  }
-
-  return { email, password };
 }
 
 export function register(api: OpenClawApi): void {
@@ -95,7 +77,7 @@ export function register(api: OpenClawApi): void {
     if (runtimePromise === null) {
       runtimePromise = Promise.resolve()
         .then(() => {
-          const credentials = readConfiguredCredentials(api.getConfig());
+          const credentials = readEnvironmentCredentials();
           const client = new OdaClient({ credentials });
 
           return {

@@ -66,18 +66,21 @@ describe('openclaw.plugin.json manifest', () => {
       expect(Array.isArray(manifest.configSchema.properties)).toBe(false);
     });
 
-    it('configSchema.properties contains email and password fields', () => {
+    it('configSchema.properties does not expose plain-text credential fields', () => {
       const props = manifest.configSchema.properties as Record<string, unknown>;
-      expect(props.email).toBeDefined();
-      expect((props.email as Record<string, unknown>).type).toBe('string');
-      expect(props.password).toBeDefined();
-      expect((props.password as Record<string, unknown>).type).toBe('string');
+      expect(props.email).toBeUndefined();
+      expect(props.password).toBeUndefined();
     });
 
     it('configSchema.required does not force email or password during installation', () => {
       const required = (manifest.configSchema.required ?? []) as string[];
       expect(required).not.toContain('email');
       expect(required).not.toContain('password');
+    });
+
+    it('configSchema description documents environment-based credentials', () => {
+      expect(manifest.configSchema.description).toContain('ODA_EMAIL');
+      expect(manifest.configSchema.description).toContain('ODA_PASSWORD');
     });
   });
 

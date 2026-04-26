@@ -53,9 +53,9 @@ import odaPlugin from "@oda-agent/openclaw-plugin";
 openclaw.registerPlugin(odaPlugin);
 ```
 
-Configure the plugin's `email` and `password` fields in OpenClaw before using
-the Oda tools. Reload the plugin after changing those credentials so the new
-config is picked up.
+Set `ODA_EMAIL` and `ODA_PASSWORD` in the environment before launching
+OpenClaw, then reload the plugin after changing either value so the new
+credentials are picked up.
 
 ## Safety model
 

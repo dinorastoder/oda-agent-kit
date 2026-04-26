@@ -41,7 +41,7 @@ describe('OpenClaw plugin entry', () => {
       registerTool: (name: string, _description: string, _handler: (params: unknown) => Promise<unknown>) => {
         registeredTools.push(name);
       },
-      getConfig: () => ({ email: 'test@example.com', password: 'test-password' }),
+      getConfig: () => ({}),
     };
 
     entry.register(mockApi);
@@ -77,11 +77,11 @@ describe('OpenClaw plugin entry', () => {
 
     expect(() => entry.register(mockApi)).not.toThrow();
     await expect(handlers.get('getCart')?.({})).rejects.toThrow(
-      /Set both the email and password fields in the plugin config/,
+      /Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/,
     );
   });
 
-  it('uses plugin config credentials when a tool is invoked', async () => {
+  it('uses environment credentials when a tool is invoked', async () => {
     const login = jest.spyOn(OdaClient.prototype, 'login').mockResolvedValue(undefined);
     const getCart = jest.spyOn(OdaClient.prototype, 'getCart').mockResolvedValue({
       id: 1,
@@ -96,8 +96,13 @@ describe('OpenClaw plugin entry', () => {
       registerTool: (name: string, _description: string, handler: (params: unknown) => Promise<unknown>) => {
         handlers.set(name, handler);
       },
-      getConfig: () => ({ email: 'test@example.com', password: 'test-password' }),
+      getConfig: () => ({}),
     };
+
+    const previousEmail = process.env.ODA_EMAIL;
+    const previousPassword = process.env.ODA_PASSWORD;
+    process.env.ODA_EMAIL = 'test@example.com';
+    process.env.ODA_PASSWORD = 'test-password';
 
     try {
       entry.register(mockApi);
@@ -111,6 +116,18 @@ describe('OpenClaw plugin entry', () => {
       expect(login).toHaveBeenCalledTimes(1);
       expect(getCart).toHaveBeenCalledTimes(1);
     } finally {
+      if (previousEmail === undefined) {
+        delete process.env.ODA_EMAIL;
+      } else {
+        process.env.ODA_EMAIL = previousEmail;
+      }
+
+      if (previousPassword === undefined) {
+        delete process.env.ODA_PASSWORD;
+      } else {
+        process.env.ODA_PASSWORD = previousPassword;
+      }
+
       login.mockRestore();
       getCart.mockRestore();
     }
