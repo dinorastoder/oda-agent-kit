@@ -75,7 +75,7 @@ interface PluginRuntime {
 
 function readConfiguredCredentials(config: Record<string, unknown>): PluginCredentials {
   const email = typeof config.email === 'string' ? config.email.trim() : '';
-  const password = typeof config.password === 'string' ? config.password : '';
+  const password = typeof config.password === 'string' ? config.password.trim() : '';
 
   if (!email || !password) {
     throw new Error(
@@ -125,12 +125,7 @@ export function register(api: OpenClawApi): void {
         });
     }
 
-    try {
-      return await authenticatedRuntimePromise;
-    } catch (error) {
-      authenticatedRuntimePromise = null;
-      throw error;
-    }
+    return authenticatedRuntimePromise;
   }
 
   // ── Read-only tools ─────────────────────────────────────────────────────
