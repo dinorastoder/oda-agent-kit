@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "MCP server exposing Oda operations as AI tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
