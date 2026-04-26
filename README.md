@@ -53,6 +53,9 @@ import odaPlugin from "@oda-agent/openclaw-plugin";
 openclaw.registerPlugin(odaPlugin);
 ```
 
+Configure the plugin's `email` and `password` fields in OpenClaw before using
+the Oda tools.
+
 ## Safety model
 
 Tools are grouped into four risk levels:
@@ -124,4 +127,3 @@ The repository includes optional Copilot planning artifacts in:
 - `docs/github-issues/`
 
 They can be used to manage iterative implementation work, but they are not required for normal development.
-

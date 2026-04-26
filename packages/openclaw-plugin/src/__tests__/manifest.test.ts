@@ -74,10 +74,7 @@ describe('openclaw.plugin.json manifest', () => {
       expect((props.password as Record<string, unknown>).type).toBe('string');
     });
 
-    it('configSchema.required does not force email or password (env vars are accepted as fallback)', () => {
-      // email and password are optional — credentials can be supplied via
-      // ODA_EMAIL / ODA_PASSWORD environment variables so that users do not
-      // have to embed them in the OpenClaw config file.
+    it('configSchema.required does not force email or password during installation', () => {
       const required = (manifest.configSchema.required ?? []) as string[];
       expect(required).not.toContain('email');
       expect(required).not.toContain('password');

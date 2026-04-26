@@ -1,4 +1,4 @@
-import entry from '../entry';
+import entry, { activate, register } from '../entry';
 import type { OpenClawApi } from '../entry';
 
 describe('OpenClaw plugin entry', () => {
@@ -22,6 +22,11 @@ describe('OpenClaw plugin entry', () => {
 
   it('has an activate function', () => {
     expect(typeof entry.activate).toBe('function');
+  });
+
+  it('exports register and activate as named lifecycle hooks', () => {
+    expect(register).toBe(entry.register);
+    expect(activate).toBe(entry.activate);
   });
 
   it('activate is callable without throwing', () => {
@@ -60,53 +65,18 @@ describe('OpenClaw plugin entry', () => {
     }
   });
 
-  it('register uses ODA_EMAIL / ODA_PASSWORD env vars when config fields are absent', () => {
-    const origEmail = process.env['ODA_EMAIL'];
-    const origPassword = process.env['ODA_PASSWORD'];
-
-    process.env['ODA_EMAIL'] = 'env@example.com';
-    process.env['ODA_PASSWORD'] = 'env-secret';
-
-    const registeredTools: string[] = [];
+  it('register succeeds without credentials and defers validation until tool use', async () => {
+    const handlers = new Map<string, (params: unknown) => Promise<unknown>>();
     const mockApi: OpenClawApi = {
-      registerTool: (name: string) => { registeredTools.push(name); },
+      registerTool: (name: string, _description: string, handler: (params: unknown) => Promise<unknown>) => {
+        handlers.set(name, handler);
+      },
       getConfig: () => ({}),
     };
 
-    // Should not throw — credentials come from env vars
     expect(() => entry.register(mockApi)).not.toThrow();
-    expect(registeredTools.length).toBeGreaterThan(0);
-
-    // Restore env
-    if (origEmail === undefined) {
-      delete process.env['ODA_EMAIL'];
-    } else {
-      process.env['ODA_EMAIL'] = origEmail;
-    }
-    if (origPassword === undefined) {
-      delete process.env['ODA_PASSWORD'];
-    } else {
-      process.env['ODA_PASSWORD'] = origPassword;
-    }
-  });
-
-  it('register throws a descriptive error when no credentials are available', () => {
-    const origEmail = process.env['ODA_EMAIL'];
-    const origPassword = process.env['ODA_PASSWORD'];
-    delete process.env['ODA_EMAIL'];
-    delete process.env['ODA_PASSWORD'];
-
-    const mockApi: OpenClawApi = {
-      registerTool: jest.fn(),
-      getConfig: () => ({}),
-    };
-
-    expect(() => entry.register(mockApi)).toThrow(
-      /Oda credentials are required/,
+    await expect(handlers.get('getCart')?.({})).rejects.toThrow(
+      /Set both the email and password fields in the plugin config/,
     );
-
-    // Restore env
-    if (origEmail !== undefined) process.env['ODA_EMAIL'] = origEmail;
-    if (origPassword !== undefined) process.env['ODA_PASSWORD'] = origPassword;
   });
 });
