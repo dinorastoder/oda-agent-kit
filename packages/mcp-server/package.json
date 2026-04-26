@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/mcp-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server exposing Oda operations as AI tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dinorastoder/oda-agent-kit.git"
+    "url": "git+https://github.com/dinorastoder/oda-agent-kit.git"
   },
   "license": "MIT"
 }
