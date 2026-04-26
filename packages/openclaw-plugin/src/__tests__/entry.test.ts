@@ -75,10 +75,20 @@ describe('OpenClaw plugin entry', () => {
       getConfig: () => ({}),
     };
 
-    expect(() => entry.register(mockApi)).not.toThrow();
-    await expect(handlers.get('getCart')?.({})).rejects.toThrow(
-      /Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/,
-    );
+    const env = { ...process.env };
+    delete env.ODA_EMAIL;
+    delete env.ODA_PASSWORD;
+
+    const replacedEnv = jest.replaceProperty(process, 'env', env);
+
+    try {
+      expect(() => entry.register(mockApi)).not.toThrow();
+      await expect(handlers.get('getCart')?.({})).rejects.toThrow(
+        /Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/,
+      );
+    } finally {
+      replacedEnv.restore();
+    }
   });
 
   it('uses environment credentials when a tool is invoked', async () => {
@@ -99,10 +109,11 @@ describe('OpenClaw plugin entry', () => {
       getConfig: () => ({}),
     };
 
-    const previousEmail = process.env.ODA_EMAIL;
-    const previousPassword = process.env.ODA_PASSWORD;
-    process.env.ODA_EMAIL = 'test@example.com';
-    process.env.ODA_PASSWORD = 'test-password';
+    const replacedEnv = jest.replaceProperty(process, 'env', {
+      ...process.env,
+      ODA_EMAIL: 'test@example.com',
+      ODA_PASSWORD: 'test-password',
+    });
 
     try {
       entry.register(mockApi);
@@ -116,18 +127,7 @@ describe('OpenClaw plugin entry', () => {
       expect(login).toHaveBeenCalledTimes(1);
       expect(getCart).toHaveBeenCalledTimes(1);
     } finally {
-      if (previousEmail === undefined) {
-        delete process.env.ODA_EMAIL;
-      } else {
-        process.env.ODA_EMAIL = previousEmail;
-      }
-
-      if (previousPassword === undefined) {
-        delete process.env.ODA_PASSWORD;
-      } else {
-        process.env.ODA_PASSWORD = previousPassword;
-      }
-
+      replacedEnv.restore();
       login.mockRestore();
       getCart.mockRestore();
     }
