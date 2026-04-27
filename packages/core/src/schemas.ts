@@ -323,6 +323,8 @@ export function normalizeCart(raw: OdaRawCart): OdaCart {
     }
   }
 
+  const currency = raw.currency ?? items[0]?.product.currency ?? DEFAULT_CART_CURRENCY;
+
   return {
     id: raw.id,
     items,
@@ -334,7 +336,7 @@ export function normalizeCart(raw: OdaRawCart): OdaCart {
     summary_lines: summaryLines,
     fee_lines: summaryLines.filter((line) => line.kind === 'fee'),
     total_price: raw.total_gross_amount,
-    currency: raw.currency ?? items[0]?.product.currency ?? DEFAULT_CART_CURRENCY,
+    currency,
     item_count: raw.product_quantity_count,
   };
 }
