@@ -1,8 +1,8 @@
 {
-  "id": "@oda-agent/openclaw-plugin",
-  "name": "oda-shopping-assistant",
+  "id": "oda-groceries",
+  "name": "Oda Groceries",
   "version": "0.1.8",
-  "description": "Oda grocery shopping assistant — safe cart planning, order history analysis, and delivery slot discovery.",
+  "description": "Browse groceries, review your shopping context, and apply confirmed cart changes.",
   "author": "oda-agent-kit",
   "license": "MIT",
   "configSchema": {
@@ -14,40 +14,20 @@
   "toolGroups": [
     {
       "name": "read-only",
-      "description": "Safe, read-only tools for browsing products, cart, orders, and delivery slots.",
+      "description": "Safe tools for browsing groceries and reviewing shopping context.",
       "enabled": true,
       "tools": [
         {
-          "name": "searchProducts",
-          "description": "Search for products in the Oda catalogue by keyword."
+          "name": "browse_oda_catalog",
+          "description": "Search the Oda catalog with a short, easy-to-scan result list."
         },
         {
-          "name": "getCart",
-          "description": "Retrieve the current shopping cart."
+          "name": "review_shopping_overview",
+          "description": "See the cart, saved lists, repeat buys, and delivery options together."
         },
         {
-          "name": "getOrders",
-          "description": "Fetch paginated order history."
-        },
-        {
-          "name": "getDeliverySlots",
-          "description": "List available delivery time slots."
-        },
-        {
-          "name": "getShoppingLists",
-          "description": "List the user's saved shopping lists."
-        },
-        {
-          "name": "analyseOrderHistory",
-          "description": "Analyse past orders and return a summary of frequently ordered products."
-        },
-        {
-          "name": "buildShoppingList",
-          "description": "Resolve plain-text queries into a structured shopping list without mutating the cart."
-        },
-        {
-          "name": "findCheapestDeliverySlot",
-          "description": "Return the cheapest available delivery slot without booking it."
+          "name": "plan_grocery_list",
+          "description": "Turn grocery requests into a matched plan without changing the cart."
         }
       ]
     },
@@ -57,20 +37,8 @@
       "enabled": false,
       "tools": [
         {
-          "name": "prepareCart",
-          "description": "Add all items from a shopping list to the cart. Requires explicit user confirmation before use."
-        },
-        {
-          "name": "addToCart",
-          "description": "Add a single product to the cart. Requires explicit user confirmation before use."
-        },
-        {
-          "name": "removeFromCart",
-          "description": "Remove an item from the cart by cart-item ID from getCart (`cart.items[].id`). Requires explicit user confirmation before use."
-        },
-        {
-          "name": "clearCart",
-          "description": "Remove all items from the cart. Requires explicit user confirmation before use."
+          "name": "apply_cart_changes",
+          "description": "Apply one confirmed cart change."
         }
       ]
     },

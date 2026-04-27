@@ -3,8 +3,8 @@ import entry, { activate, register } from '../entry';
 import type { OpenClawApi, OpenClawToolDefinition } from '../entry';
 
 describe('OpenClaw plugin entry', () => {
-  it('exports a default plugin entry with id "@oda-agent/openclaw-plugin"', () => {
-    expect(entry.id).toBe('@oda-agent/openclaw-plugin');
+  it('exports a default plugin entry with id "oda-groceries"', () => {
+    expect(entry.id).toBe('oda-groceries');
   });
 
   it('has a non-empty name', () => {
@@ -47,23 +47,14 @@ describe('OpenClaw plugin entry', () => {
     entry.register(mockApi);
 
     const expectedTools = [
-      'searchProducts',
-      'getCart',
-      'getOrders',
-      'getDeliverySlots',
-      'getShoppingLists',
-      'analyseOrderHistory',
-      'buildShoppingList',
-      'findCheapestDeliverySlot',
-      'addToCart',
-      'removeFromCart',
-      'clearCart',
-      'prepareCart',
+      'browse_oda_catalog',
+      'review_shopping_overview',
+      'plan_grocery_list',
+      'apply_cart_changes',
     ];
 
-    for (const tool of expectedTools) {
-      expect(registeredTools).toContain(tool);
-    }
+    expect(registeredTools).toEqual(expect.arrayContaining(expectedTools));
+    expect(registeredTools).toHaveLength(expectedTools.length);
   });
 
   it('register succeeds without credentials and defers validation until tool use', async () => {
@@ -83,7 +74,7 @@ describe('OpenClaw plugin entry', () => {
 
     try {
       expect(() => entry.register(mockApi)).not.toThrow();
-      await expect(handlers.get('getCart')?.({})).rejects.toThrow(
+      await expect(handlers.get('review_shopping_overview')?.({})).rejects.toThrow(
         /Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/,
       );
     } finally {
@@ -93,12 +84,32 @@ describe('OpenClaw plugin entry', () => {
 
   it('uses environment credentials when a tool is invoked', async () => {
     const login = jest.spyOn(OdaClient.prototype, 'login').mockResolvedValue(undefined);
-    const getCart = jest.spyOn(OdaClient.prototype, 'getCart').mockResolvedValue({
-      id: 1,
-      items: [],
-      total_price: '0.00',
-      currency: 'NOK',
-      item_count: 0,
+    const searchProducts = jest.spyOn(OdaClient.prototype, 'searchProducts').mockResolvedValue({
+      query: 'milk',
+      count: 1,
+      results: [
+        {
+          id: 1,
+          full_name: 'Whole Milk 1L',
+          brand: 'Oda',
+          name: 'Milk',
+          front_url: '/products/1',
+          gross_price: '29.90',
+          gross_unit_price: '29.90',
+          unit_price_quantity_abbreviation: 'L',
+          unit_price_quantity_name: 'liter',
+          currency: 'NOK',
+          is_available: true,
+          is_sponsored: false,
+          promoted_product: false,
+          images: [],
+          discount: null,
+          availability: {
+            is_available: true,
+            description: null,
+          },
+        },
+      ],
     });
     const handlers = new Map<string, (params: unknown) => Promise<unknown>>();
 
@@ -117,19 +128,35 @@ describe('OpenClaw plugin entry', () => {
 
     try {
       entry.register(mockApi);
-      await expect(handlers.get('getCart')?.({})).resolves.toEqual({
-        id: 1,
-        items: [],
-        total_price: '0.00',
-        currency: 'NOK',
-        item_count: 0,
+      await expect(handlers.get('browse_oda_catalog')?.({ query: 'milk' })).resolves.toEqual({
+        query: 'milk',
+        totalMatches: 1,
+        products: [
+          {
+            productId: 1,
+            name: 'Whole Milk 1L',
+            brand: 'Oda',
+            price: '29.90',
+            currency: 'NOK',
+            available: true,
+          },
+        ],
       });
       expect(login).toHaveBeenCalledTimes(1);
-      expect(getCart).toHaveBeenCalledTimes(1);
+      expect(searchProducts).toHaveBeenCalledWith('milk');
+      const registeredToolLabels = new Map<string, string | undefined>();
+      entry.register({
+        registerTool: (tool: OpenClawToolDefinition) => {
+          registeredToolLabels.set(tool.name, tool.label);
+        },
+        getConfig: () => ({}),
+      });
+      expect(registeredToolLabels.get('browse_oda_catalog')).toBe('Browse Catalog');
+      expect(registeredToolLabels.get('review_shopping_overview')).toBe('Review Shopping Overview');
     } finally {
       replacedEnv.restore();
       login.mockRestore();
-      getCart.mockRestore();
+      searchProducts.mockRestore();
     }
   });
 });

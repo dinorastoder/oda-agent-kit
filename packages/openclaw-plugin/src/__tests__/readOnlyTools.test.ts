@@ -1,5 +1,6 @@
-import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot, OdaShoppingList } from '@oda-agent/core';
+import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot } from '@oda-agent/core';
 import {
+  browseCatalog,
   searchProducts,
   getCart,
   getOrders,
@@ -7,7 +8,15 @@ import {
   getShoppingLists,
 } from '../tools/readOnlyTools';
 
-function makeClient(overrides: Partial<OdaClient> = {}): OdaClient {
+interface TestClientOverrides extends Partial<OdaClient> {
+  getShoppingLists?: jest.Mock;
+}
+
+interface TestClient extends OdaClient {
+  getShoppingLists?: jest.Mock;
+}
+
+function makeClient(overrides: TestClientOverrides = {}): TestClient {
   return {
     login: jest.fn(),
     logout: jest.fn(),
@@ -22,10 +31,58 @@ function makeClient(overrides: Partial<OdaClient> = {}): OdaClient {
     getDeliverySlots: jest.fn(),
     getShoppingLists: jest.fn(),
     ...overrides,
-  } as unknown as OdaClient;
+  } as unknown as TestClient;
 }
 
 describe('readOnlyTools', () => {
+  describe('browseCatalog', () => {
+    it('returns a compact search result list', async () => {
+      const client = makeClient({
+        searchProducts: jest.fn().mockResolvedValue({
+          results: [
+            {
+              id: 42,
+              full_name: 'Oat Milk 1L',
+              brand: 'Oatly',
+              name: 'Oat Milk',
+              front_url: '/products/42',
+              gross_price: '29.90',
+              gross_unit_price: '29.90',
+              unit_price_quantity_abbreviation: 'L',
+              unit_price_quantity_name: 'liter',
+              currency: 'NOK',
+              is_available: true,
+              is_sponsored: false,
+              promoted_product: false,
+              images: [],
+              discount: null,
+              availability: { is_available: true, description: null },
+            },
+          ],
+          count: 1,
+          query: 'oat milk',
+        }),
+      });
+
+      const result = await browseCatalog(client, { query: 'oat milk' });
+
+      expect(result).toEqual({
+        query: 'oat milk',
+        totalMatches: 1,
+        products: [
+          {
+            productId: 42,
+            name: 'Oat Milk 1L',
+            brand: 'Oatly',
+            price: '29.90',
+            currency: 'NOK',
+            available: true,
+          },
+        ],
+      });
+    });
+  });
+
   describe('searchProducts', () => {
     it('delegates to client.searchProducts with the query', async () => {
       const mockResponse: OdaSearchResponse = { results: [], count: 0, query: 'milk' };
@@ -87,14 +144,15 @@ describe('readOnlyTools', () => {
 
   describe('getShoppingLists', () => {
     it('delegates to client.getShoppingLists', async () => {
-      const mockLists: OdaShoppingList[] = [
+      const mockLists = [
         { id: 10, name: 'Weekly', items: [] },
       ];
+      const getShoppingListsMock = jest.fn().mockResolvedValue(mockLists);
       const client = makeClient({
-        getShoppingLists: jest.fn().mockResolvedValue(mockLists),
+        getShoppingLists: getShoppingListsMock,
       });
       const result = await getShoppingLists(client);
-      expect(client.getShoppingLists).toHaveBeenCalledTimes(1);
+      expect(getShoppingListsMock).toHaveBeenCalledTimes(1);
       expect(result).toBe(mockLists);
     });
   });

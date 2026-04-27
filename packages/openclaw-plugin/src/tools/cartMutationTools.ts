@@ -29,6 +29,20 @@ export interface CartMutationResult {
   summary: string;
 }
 
+/** Parameters for the higher-level updateCart tool. */
+export interface UpdateCartParams {
+  mode: 'apply-plan' | 'add-products' | 'remove-products' | 'clear-cart';
+  plan?: ShoppingList;
+  items?: Array<{ productId: number; quantity: number }>;
+  productIds?: number[];
+}
+
+/** Result of the higher-level updateCart tool. */
+export interface CartUpdateResult extends CartMutationResult {
+  mode: UpdateCartParams['mode'];
+  steps: string[];
+}
+
 // ---------------------------------------------------------------------------
 // Tool implementations
 // ---------------------------------------------------------------------------
@@ -89,4 +103,74 @@ export async function prepareCart(
   return {
     summary: `Added ${list.items.length} item(s) from list "${list.name}" to cart.`,
   };
+}
+
+/**
+ * Apply one cart update intent by composing the lower-level mutation helpers.
+ */
+export async function updateCart(
+  client: OdaClient,
+  params: UpdateCartParams,
+): Promise<CartUpdateResult> {
+  switch (params.mode) {
+    case 'apply-plan': {
+      if (!params.plan) {
+        throw new Error('updateCart with mode "apply-plan" requires a shopping plan.');
+      }
+
+      const result = await prepareCart(client, params.plan);
+      return {
+        mode: params.mode,
+        summary: result.summary,
+        steps: params.plan.items.map(
+          (item) => `Add ${item.quantity}× product #${item.productId}.`,
+        ),
+      };
+    }
+
+    case 'add-products': {
+      if (!params.items || params.items.length === 0) {
+        throw new Error('updateCart with mode "add-products" requires at least one item.');
+      }
+
+      const steps: string[] = [];
+      for (const item of params.items) {
+        const result = await addToCart(client, item.productId, item.quantity);
+        steps.push(result.summary);
+      }
+
+      return {
+        mode: params.mode,
+        summary: `Added ${params.items.length} product(s) to cart.`,
+        steps,
+      };
+    }
+
+    case 'remove-products': {
+      if (!params.productIds || params.productIds.length === 0) {
+        throw new Error('updateCart with mode "remove-products" requires at least one product ID.');
+      }
+
+      const steps: string[] = [];
+      for (const productId of params.productIds) {
+        const result = await removeFromCart(client, productId);
+        steps.push(result.summary);
+      }
+
+      return {
+        mode: params.mode,
+        summary: `Removed ${params.productIds.length} product(s) from cart.`,
+        steps,
+      };
+    }
+
+    case 'clear-cart': {
+      const result = await clearCart(client);
+      return {
+        mode: params.mode,
+        summary: result.summary,
+        steps: [result.summary],
+      };
+    }
+  }
 }

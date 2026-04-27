@@ -27,14 +27,9 @@ These tools are safe to invoke without user confirmation. They observe but do no
 
 | Tool | Description |
 |------|-------------|
-| `searchProducts` | Search the Oda catalogue by keyword |
-| `getCart` | Read the current shopping cart |
-| `getOrders` | Fetch paginated order history |
-| `getDeliverySlots` | List available delivery time slots |
-| `getShoppingLists` | List the user's saved shopping lists |
-| `buildShoppingList` | Resolve plain-text queries into a structured shopping list |
-| `analyseOrderHistory` | Summarise past orders and frequently bought products |
-| `findCheapestDeliverySlot` | Find the cheapest available delivery slot (read-only) |
+| `browse_oda_catalog` | Search the Oda catalogue with a short result list |
+| `review_shopping_overview` | Review the cart, saved lists, repeat purchases, and delivery options in one call |
+| `plan_grocery_list` | Turn grocery requests into a matched shopping plan without mutating the cart |
 
 ### Cart-mutation tools (disabled by default)
 
@@ -42,10 +37,7 @@ These tools modify the shopping cart. They must be **explicitly enabled** by the
 
 | Tool | Description |
 |------|-------------|
-| `prepareCart` | Bulk-add all items from a shopping list to the cart |
-| `addToCart` | Add a single product to the cart |
-| `removeFromCart` | Remove a cart item by cart-item ID (`cart.items[].id`) |
-| `clearCart` | Remove all items from the cart |
+| `apply_cart_changes` | Apply one confirmed cart change, including adding products, removing products, clearing the cart, or applying a shopping plan |
 
 ### High-risk tools (not implemented in v0)
 
@@ -68,7 +60,7 @@ Order placement and payment are **out of scope** for v0. The `placeOrder` tool i
 ```
 User:  Can you suggest a weekly shop based on what I usually buy?
 
-Agent: Sure! Here's a proposed list based on your last 5 orders:
+Agent: I reviewed your account and built a proposed list based on your recent orders:
 
        1. Oat Milk 1L × 2   — ordered 4 times in the last 3 months
        2. Sourdough Bread × 1 — ordered every week
@@ -78,7 +70,7 @@ Agent: Sure! Here's a proposed list based on your last 5 orders:
 
 User:  Yes, add them.
 
-Agent: Adding 3 items to your cart…
+Agent: Applying the confirmed cart update…
        ✓ Oat Milk 1L × 2
        ✓ Sourdough Bread × 1
        ✓ Greek Yoghurt 500g × 2

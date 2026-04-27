@@ -16,7 +16,7 @@
  * these primitives without performing any writes.
  */
 
-import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot, OdaShoppingList } from '@oda-agent/core';
+import type { OdaClient, OdaSearchResponse, OdaCart, OdaPage, OdaOrder, OdaDeliverySlot } from '@oda-agent/core';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -27,10 +27,40 @@ export interface SearchProductsParams {
   query: string;
 }
 
+/** Parameters for the browseCatalog tool. */
+export interface BrowseCatalogParams {
+  query: string;
+  limit?: number;
+}
+
+/** A compact search result for UI-facing catalog browsing. */
+export interface CatalogBrowseResult {
+  query: string;
+  totalMatches: number;
+  products: Array<{
+    productId: number;
+    name: string;
+    brand: string | null;
+    price: string;
+    currency: string;
+    available: boolean;
+  }>;
+}
+
 /** Parameters for the getOrders tool. */
 export interface GetOrdersParams {
   /** Page number, 1-based. Defaults to 1. */
   page?: number;
+}
+
+interface SavedListLike {
+  id: number;
+  name: string;
+  items: unknown[];
+}
+
+interface OdaClientWithShoppingLists extends OdaClient {
+  getShoppingLists?: () => Promise<SavedListLike[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -46,6 +76,30 @@ export async function searchProducts(
   params: SearchProductsParams,
 ): Promise<OdaSearchResponse> {
   return client.searchProducts(params.query);
+}
+
+/**
+ * Search the Oda catalogue and return a compact, UI-friendly result list.
+ */
+export async function browseCatalog(
+  client: OdaClient,
+  params: BrowseCatalogParams,
+): Promise<CatalogBrowseResult> {
+  const response = await client.searchProducts(params.query);
+  const limit = params.limit ?? 5;
+
+  return {
+    query: response.query,
+    totalMatches: response.count,
+    products: response.results.slice(0, limit).map((product) => ({
+      productId: product.id,
+      name: product.full_name,
+      brand: product.brand,
+      price: product.gross_price,
+      currency: product.currency,
+      available: product.is_available,
+    })),
+  };
 }
 
 /**
@@ -75,6 +129,12 @@ export async function getDeliverySlots(client: OdaClient): Promise<OdaDeliverySl
 /**
  * List the authenticated user's saved shopping lists.
  */
-export async function getShoppingLists(client: OdaClient): Promise<OdaShoppingList[]> {
-  return client.getShoppingLists();
+export async function getShoppingLists(client: OdaClient): Promise<SavedListLike[]> {
+  const clientWithLists = client as OdaClientWithShoppingLists;
+
+  if (typeof clientWithLists.getShoppingLists !== 'function') {
+    return [];
+  }
+
+  return clientWithLists.getShoppingLists();
 }

@@ -196,7 +196,7 @@ Output:
 
 ## Mutation tools (Level 1 — cart)
 
-> **Note:** These tool names describe the planned v1 MCP server interface.  The current MCP server (`@oda-agent/mcp-server`) is **read-only** and does not yet expose mutation tools.  Equivalent functionality is available today via the OpenClaw plugin (`addToCart`, `removeFromCart`, `prepareCart`).
+> **Note:** These tool names describe the planned v1 MCP server interface. The current MCP server (`@oda-agent/mcp-server`) is **read-only** and does not yet expose mutation tools. Equivalent functionality is available today via the OpenClaw plugin through the higher-level `apply_cart_changes` tool.
 
 Mutation tools require explicit user confirmation before execution.
 
