@@ -223,6 +223,44 @@ export const OdaRawCartSchema = z.object({
 
 export type OdaRawCart = z.infer<typeof OdaRawCartSchema>;
 
+const DEFAULT_CART_CURRENCY = 'NOK';
+
+function priceToMinorUnits(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0;
+}
+
+function classifyCartSummaryLine(
+  sectionId: string,
+  lineName: string,
+  grossAmount: string,
+  displayStyle?: string,
+): OdaCartSummaryLine['kind'] {
+  const normalizedSectionId = sectionId.split('.').pop();
+
+  if (normalizedSectionId === 'TOTAL' || lineName === 'GrossTotalAmount') {
+    return 'total';
+  }
+
+  if (lineName === 'GrossSubtotalAmount' || (normalizedSectionId === 'SUBTOTAL' && displayStyle === 'primary')) {
+    return 'subtotal';
+  }
+
+  if (grossAmount.startsWith('-') || /discount/i.test(lineName)) {
+    return 'discount';
+  }
+
+  if (/fee/i.test(lineName)) {
+    return 'fee';
+  }
+
+  if (lineName === 'GrossAmount') {
+    return 'item';
+  }
+
+  return 'other';
+}
+
 /**
  * Normalise a raw Oda cart API response into the clean {@link OdaCart}
  * interface used throughout the rest of this package.
@@ -240,47 +278,11 @@ export function normalizeCart(raw: OdaRawCart): OdaCart {
     section.lines.map((line) => ({
       label: line.description,
       price: line.gross_amount,
-      kind: classifySummaryLine(section.id, line.name, line.gross_amount, line.display_style),
+      kind: classifyCartSummaryLine(section.id, line.name, line.gross_amount, line.display_style),
       details: line.long_description,
     })),
   );
   let subtotalMinorUnits = 0;
-
-  function priceToMinorUnits(value: string): number {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0;
-  }
-
-  function classifySummaryLine(
-    sectionId: string,
-    lineName: string,
-    grossAmount: string,
-    displayStyle?: string,
-  ): OdaCartSummaryLine['kind'] {
-    const normalizedSectionId = sectionId.split('.').pop();
-
-    if (normalizedSectionId === 'TOTAL' || lineName === 'GrossTotalAmount') {
-      return 'total';
-    }
-
-    if (lineName === 'GrossSubtotalAmount' || (normalizedSectionId === 'SUBTOTAL' && displayStyle === 'primary')) {
-      return 'subtotal';
-    }
-
-    if (grossAmount.startsWith('-') || /discount/i.test(lineName)) {
-      return 'discount';
-    }
-
-    if (/fee/i.test(lineName)) {
-      return 'fee';
-    }
-
-    if (lineName === 'GrossAmount') {
-      return 'item';
-    }
-
-    return 'other';
-  }
 
   for (const group of raw.groups) {
     for (const item of group.items) {
@@ -332,7 +334,7 @@ export function normalizeCart(raw: OdaRawCart): OdaCart {
     summary_lines: summaryLines,
     fee_lines: summaryLines.filter((line) => line.kind === 'fee'),
     total_price: raw.total_gross_amount,
-    currency: raw.currency ?? items[0]?.product.currency ?? 'NOK',
+    currency: raw.currency ?? items[0]?.product.currency ?? DEFAULT_CART_CURRENCY,
     item_count: raw.product_quantity_count,
   };
 }
