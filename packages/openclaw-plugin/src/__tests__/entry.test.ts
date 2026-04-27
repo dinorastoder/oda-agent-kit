@@ -1,6 +1,6 @@
 import { OdaClient } from '@oda-agent/core';
 import entry, { activate, register } from '../entry';
-import type { OpenClawApi } from '../entry';
+import type { OpenClawApi, OpenClawToolDefinition } from '../entry';
 
 describe('OpenClaw plugin entry', () => {
   it('exports a default plugin entry with id "@oda-agent/openclaw-plugin"', () => {
@@ -38,8 +38,8 @@ describe('OpenClaw plugin entry', () => {
     const registeredTools: string[] = [];
 
     const mockApi: OpenClawApi = {
-      registerTool: (name: string, _description: string, _handler: (params: unknown) => Promise<unknown>) => {
-        registeredTools.push(name);
+      registerTool: (tool: OpenClawToolDefinition) => {
+        registeredTools.push(tool.name);
       },
       getConfig: () => ({}),
     };
@@ -69,8 +69,8 @@ describe('OpenClaw plugin entry', () => {
   it('register succeeds without credentials and defers validation until tool use', async () => {
     const handlers = new Map<string, (params: unknown) => Promise<unknown>>();
     const mockApi: OpenClawApi = {
-      registerTool: (name: string, _description: string, handler: (params: unknown) => Promise<unknown>) => {
-        handlers.set(name, handler);
+      registerTool: (tool: OpenClawToolDefinition) => {
+        handlers.set(tool.name, (params: unknown) => tool.execute('test-call', params));
       },
       getConfig: () => ({}),
     };
@@ -103,8 +103,8 @@ describe('OpenClaw plugin entry', () => {
     const handlers = new Map<string, (params: unknown) => Promise<unknown>>();
 
     const mockApi: OpenClawApi = {
-      registerTool: (name: string, _description: string, handler: (params: unknown) => Promise<unknown>) => {
-        handlers.set(name, handler);
+      registerTool: (tool: OpenClawToolDefinition) => {
+        handlers.set(tool.name, (params: unknown) => tool.execute('test-call', params));
       },
       getConfig: () => ({}),
     };
