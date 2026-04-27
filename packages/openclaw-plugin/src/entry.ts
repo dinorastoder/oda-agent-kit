@@ -29,14 +29,21 @@ import type { ShoppingList } from './plugin.js';
  * members used by this plugin are declared here.
  */
 export interface OpenClawApi {
-  /** Register a named tool with the plugin runtime. */
-  registerTool(
-    name: string,
-    description: string,
-    handler: (params: unknown) => Promise<unknown>,
-  ): void;
+  /** Register a tool with the plugin runtime. */
+  registerTool(tool: OpenClawToolDefinition): void;
   /** Return the plugin configuration provided by the user or environment. */
   getConfig(): Record<string, unknown>;
+}
+
+export interface OpenClawToolDefinition {
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+  execute(toolCallId: string, params: unknown): Promise<unknown>;
 }
 
 /** Shape of an OpenClaw native plugin entry. */
@@ -67,6 +74,23 @@ function definePluginEntry(entry: OpenClawPluginEntry): OpenClawPluginEntry {
 interface PluginRuntime {
   client: OdaClient;
   plugin: ReturnType<typeof createOpenClawPlugin>;
+}
+
+function registerTool(
+  api: OpenClawApi,
+  name: string,
+  description: string,
+  parameters: OpenClawToolDefinition['parameters'],
+  handler: (params: unknown) => Promise<unknown>,
+): void {
+  api.registerTool({
+    name,
+    description,
+    parameters,
+    async execute(_toolCallId: string, params: unknown) {
+      return handler(params);
+    },
+  });
 }
 
 export function register(api: OpenClawApi): void {
@@ -112,45 +136,81 @@ export function register(api: OpenClawApi): void {
 
   // ── Read-only tools ─────────────────────────────────────────────────────
 
-  api.registerTool(
+  registerTool(
+    api,
     'searchProducts',
     'Search for products in the Oda catalogue by keyword.',
+    {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query for catalogue lookup.',
+        },
+      },
+      required: ['query'],
+    },
     async (params) => {
       const { client } = await ensureLoggedIn();
       return readOnlyTools.searchProducts(client, params as SearchProductsParams);
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'getCart',
     'Retrieve the current shopping cart.',
+    {
+      type: 'object',
+      properties: {},
+    },
     async () => {
       const { client } = await ensureLoggedIn();
       return readOnlyTools.getCart(client);
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'getOrders',
     'Fetch paginated order history.',
+    {
+      type: 'object',
+      properties: {
+        page: {
+          type: 'number',
+          description: 'Page number to fetch. Defaults to 1.',
+        },
+      },
+    },
     async (params) => {
       const { client } = await ensureLoggedIn();
       return readOnlyTools.getOrders(client, params as GetOrdersParams | undefined);
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'getDeliverySlots',
     'List available delivery time slots.',
+    {
+      type: 'object',
+      properties: {},
+    },
     async () => {
       const { client } = await ensureLoggedIn();
       return readOnlyTools.getDeliverySlots(client);
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'getShoppingLists',
     "List the user's saved shopping lists.",
+    {
+      type: 'object',
+      properties: {},
+    },
     async () => {
       const { client } = await ensureLoggedIn();
       return readOnlyTools.getShoppingLists(client);
@@ -159,9 +219,19 @@ export function register(api: OpenClawApi): void {
 
   // ── Higher-level read-only helpers ──────────────────────────────────────
 
-  api.registerTool(
+  registerTool(
+    api,
     'analyseOrderHistory',
     'Analyse past orders and return a summary of frequently ordered products.',
+    {
+      type: 'object',
+      properties: {
+        maxPages: {
+          type: 'number',
+          description: 'Maximum number of order-history pages to inspect.',
+        },
+      },
+    },
     async (params) => {
       const { plugin } = await ensureLoggedIn();
       const p = params as { maxPages?: number } | undefined;
@@ -169,9 +239,38 @@ export function register(api: OpenClawApi): void {
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'buildShoppingList',
     'Resolve plain-text queries into a structured shopping list without mutating the cart.',
+    {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Shopping-list name.',
+        },
+        items: {
+          type: 'array',
+          description: 'Requested items to resolve into Oda products.',
+          items: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Free-text item query.',
+              },
+              quantity: {
+                type: 'number',
+                description: 'Requested quantity.',
+              },
+            },
+            required: ['query', 'quantity'],
+          },
+        },
+      },
+      required: ['name', 'items'],
+    },
     async (params) => {
       const { plugin } = await ensureLoggedIn();
       const p = params as { name: string; items: Array<{ query: string; quantity: number }> };
@@ -179,9 +278,14 @@ export function register(api: OpenClawApi): void {
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'findCheapestDeliverySlot',
     'Return the cheapest available delivery slot without booking it.',
+    {
+      type: 'object',
+      properties: {},
+    },
     async () => {
       const { plugin } = await ensureLoggedIn();
       return plugin.findCheapestDeliverySlot();
@@ -190,9 +294,24 @@ export function register(api: OpenClawApi): void {
 
   // ── Cart-mutation tools (disabled by default in manifest) ───────────────
 
-  api.registerTool(
+  registerTool(
+    api,
     'addToCart',
     'Add a single product to the cart. Requires explicit user confirmation before use.',
+    {
+      type: 'object',
+      properties: {
+        productId: {
+          type: 'number',
+          description: 'Oda product ID.',
+        },
+        quantity: {
+          type: 'number',
+          description: 'Quantity to add.',
+        },
+      },
+      required: ['productId', 'quantity'],
+    },
     async (params) => {
       const { client } = await ensureLoggedIn();
       const p = params as { productId: number; quantity: number };
@@ -200,9 +319,20 @@ export function register(api: OpenClawApi): void {
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'removeFromCart',
     'Remove an item from the cart by product ID. Requires explicit user confirmation before use.',
+    {
+      type: 'object',
+      properties: {
+        productId: {
+          type: 'number',
+          description: 'Oda product ID to remove.',
+        },
+      },
+      required: ['productId'],
+    },
     async (params) => {
       const { client } = await ensureLoggedIn();
       const p = params as { productId: number };
@@ -210,18 +340,52 @@ export function register(api: OpenClawApi): void {
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'clearCart',
     'Remove all items from the cart. Requires explicit user confirmation before use.',
+    {
+      type: 'object',
+      properties: {},
+    },
     async () => {
       const { client } = await ensureLoggedIn();
       return cartMutationTools.clearCart(client);
     },
   );
 
-  api.registerTool(
+  registerTool(
+    api,
     'prepareCart',
     'Add all items from a shopping list to the cart. Requires explicit user confirmation before use.',
+    {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Shopping-list name.',
+        },
+        items: {
+          type: 'array',
+          description: 'Resolved products to add to the cart.',
+          items: {
+            type: 'object',
+            properties: {
+              productId: {
+                type: 'number',
+                description: 'Oda product ID.',
+              },
+              quantity: {
+                type: 'number',
+                description: 'Quantity to add.',
+              },
+            },
+            required: ['productId', 'quantity'],
+          },
+        },
+      },
+      required: ['name', 'items'],
+    },
     async (params) => {
       const { client } = await ensureLoggedIn();
       return cartMutationTools.prepareCart(client, params as ShoppingList);
