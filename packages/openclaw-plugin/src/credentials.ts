@@ -7,11 +7,11 @@ export const ODA_EMAIL_ENV_VAR = 'ODA_EMAIL';
 export const ODA_PASSWORD_ENV_VAR = 'ODA_PASSWORD';
 
 function readEnvironmentValue(env: NodeJS.ProcessEnv, name: string): string {
-  const value = env[name];
+  const value = env?.[name];
   return typeof value === 'string' ? value.trim() : '';
 }
 
-export function readEnvironmentCredentials(env: NodeJS.ProcessEnv = process.env): PluginCredentials {
+export function readEnvironmentCredentials(env: NodeJS.ProcessEnv = process.env ?? {}): PluginCredentials {
   const email = readEnvironmentValue(env, ODA_EMAIL_ENV_VAR);
   const password = readEnvironmentValue(env, ODA_PASSWORD_ENV_VAR);
 

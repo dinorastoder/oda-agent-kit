@@ -33,4 +33,10 @@ describe('readEnvironmentCredentials', () => {
       }),
     ).toThrow(/Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/);
   });
+
+  it('throws a credentials error (not a crash) when env is undefined', () => {
+    expect(() =>
+      readEnvironmentCredentials(undefined as unknown as NodeJS.ProcessEnv),
+    ).toThrow(/Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/);
+  });
 });
