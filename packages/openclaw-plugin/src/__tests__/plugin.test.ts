@@ -1,15 +1,7 @@
 import { createOpenClawPlugin } from '../plugin';
 import type { OdaClient, OdaSearchResponse, OdaDeliverySlot } from '@oda-agent/core';
 
-interface TestClientOverrides extends Partial<OdaClient> {
-  getShoppingLists?: jest.Mock;
-}
-
-interface TestClient extends OdaClient {
-  getShoppingLists?: jest.Mock;
-}
-
-function makeClient(overrides: TestClientOverrides = {}): TestClient {
+function makeClient(overrides: Partial<OdaClient> = {}): OdaClient {
   return {
     login: jest.fn(),
     logout: jest.fn(),
@@ -24,7 +16,7 @@ function makeClient(overrides: TestClientOverrides = {}): TestClient {
     getShoppingLists: jest.fn(),
     getDeliverySlots: jest.fn(),
     ...overrides,
-  } as unknown as TestClient;
+  } as unknown as OdaClient;
 }
 
 describe('createOpenClawPlugin', () => {

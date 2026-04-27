@@ -8,15 +8,7 @@ import {
   getShoppingLists,
 } from '../tools/readOnlyTools';
 
-interface TestClientOverrides extends Partial<OdaClient> {
-  getShoppingLists?: jest.Mock;
-}
-
-interface TestClient extends OdaClient {
-  getShoppingLists?: jest.Mock;
-}
-
-function makeClient(overrides: TestClientOverrides = {}): TestClient {
+function makeClient(overrides: Partial<OdaClient> = {}): OdaClient {
   return {
     login: jest.fn(),
     logout: jest.fn(),
@@ -31,7 +23,7 @@ function makeClient(overrides: TestClientOverrides = {}): TestClient {
     getDeliverySlots: jest.fn(),
     getShoppingLists: jest.fn(),
     ...overrides,
-  } as unknown as TestClient;
+  } as unknown as OdaClient;
 }
 
 describe('readOnlyTools', () => {
