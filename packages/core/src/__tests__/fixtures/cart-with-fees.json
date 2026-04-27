@@ -1,0 +1,113 @@
+{
+  "id": 0,
+  "product_quantity_count": 1,
+  "total_gross_amount": "240.70",
+  "groups": [
+    {
+      "items": [
+        {
+          "item_id": 675765245,
+          "product": {
+            "id": 26541,
+            "full_name": "Pink Lady Epler Italia / Frankrike",
+            "name": "Pink Lady Epler",
+            "gross_price": "30.00",
+            "gross_unit_price": "35.29",
+            "unit_price_quantity_abbreviation": "kg",
+            "brand": null,
+            "front_url": "https://oda.com/no/products/26541-pink-lady-epler-italia-frankrike/",
+            "unit_price_quantity_name": "kilogram",
+            "currency": "NOK",
+            "discount": null,
+            "availability": {
+              "is_available": true,
+              "description": ""
+            },
+            "is_available": true,
+            "is_sponsored": false,
+            "promoted_product": false,
+            "images": []
+          },
+          "quantity": 1,
+          "display_price_total": "51.90",
+          "discounted_quantity": 1,
+          "discounted_display_price_total": "30.00"
+        }
+      ]
+    }
+  ],
+  "label_text": "1 vare",
+  "display_price": "51.90",
+  "summary_lines": [
+    {
+      "id": "SummaryGroupSectionEnum.SUBTOTAL",
+      "lines": [
+        {
+          "description": "1 vare",
+          "long_description": null,
+          "gross_amount": "51.90",
+          "group_id": 0,
+          "section_id": 0,
+          "name": "GrossAmount",
+          "display_style": "secondary"
+        },
+        {
+          "description": "Du sparer",
+          "long_description": null,
+          "gross_amount": "-21.90",
+          "group_id": 1,
+          "section_id": 0,
+          "name": "ProductDiscounter",
+          "display_style": "secondary"
+        },
+        {
+          "description": "Delsum",
+          "long_description": null,
+          "gross_amount": "30.00",
+          "group_id": 2,
+          "section_id": 0,
+          "name": "GrossSubtotalAmount",
+          "display_style": "primary"
+        },
+        {
+          "description": "Tillegg for mindre bestilling",
+          "long_description": "På bestillinger under 1100 kr kommer det et pakketillegg i prisen, som reduseres trinnvis. Neste trinn er ved 700 kr.",
+          "gross_amount": "199.00",
+          "group_id": 3,
+          "section_id": 0,
+          "name": "SmallOrderFeeManipulator",
+          "display_style": "secondary"
+        }
+      ]
+    },
+    {
+      "id": "SummaryGroupSectionEnum.EXTRA_MANIPULATORS",
+      "lines": [
+        {
+          "description": "Leveringsemballasje",
+          "long_description": "Vi tar en liten avgift for eskene vi leverer varene dine i.",
+          "gross_amount": "11.70",
+          "group_id": 7,
+          "section_id": 1,
+          "name": "BagFeeManipulator",
+          "display_style": "secondary"
+        }
+      ]
+    },
+    {
+      "id": "SummaryGroupSectionEnum.TOTAL",
+      "lines": [
+        {
+          "description": "Total inkl. MVA",
+          "long_description": null,
+          "gross_amount": "240.70",
+          "group_id": 9,
+          "section_id": 2,
+          "name": "GrossTotalAmount",
+          "display_style": "primary"
+        }
+      ]
+    }
+  ],
+  "currency": "NOK"
+}

@@ -98,7 +98,29 @@ Output:
         "is_available": true
       },
       "quantity": 2,
-      "line_price": "string"
+      "line_price": "string",
+      "original_line_price": "string | null",
+      "unit_price": "string",
+      "label": "string | null"
+    }
+  ],
+  "label": "string | null",
+  "display_price": "string | null",
+  "subtotal_price": "string",
+  "summary_lines": [
+    {
+      "label": "string",
+      "price": "string",
+      "kind": "item | discount | subtotal | fee | total | other",
+      "details": "string | null"
+    }
+  ],
+  "fee_lines": [
+    {
+      "label": "string",
+      "price": "string",
+      "kind": "fee",
+      "details": "string | null"
     }
   ],
   "total_price": "string",
@@ -106,6 +128,13 @@ Output:
   "item_count": 2
 }
 ```
+
+`line_price` is the effective user-facing line total, so discounted carts may have
+`line_price` values that are lower than `original_line_price`. `label` and
+`display_price` preserve Oda's top-level visible-item summary, `summary_lines`
+preserves the detailed subtotal/discount/fee/total breakdown, `fee_lines`
+contains just the non-item fee rows, and `total_price` remains the authoritative
+final cart total returned by Oda.
 
 ### `oda_get_delivery_slots`
 

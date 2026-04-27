@@ -16,15 +16,31 @@ export interface CartOverviewItem {
   name: string;
   quantity: number;
   linePrice: string;
+  originalLinePrice: string | null;
+  unitPrice: string;
+  label: string | null;
   available: boolean;
+}
+
+/** A user-friendly non-item pricing line. */
+export interface CartOverviewPriceLine {
+  label: string;
+  price: string;
+  kind: 'item' | 'discount' | 'subtotal' | 'fee' | 'total' | 'other';
+  details: string | null;
 }
 
 /** A compact cart summary for UI-facing tools. */
 export interface CartOverview {
   itemCount: number;
+  label: string | null;
+  displayPrice: string | null;
+  subtotalPrice: string;
   totalPrice: string;
   currency: string;
   items: CartOverviewItem[];
+  summaryLines: CartOverviewPriceLine[];
+  feeLines: CartOverviewPriceLine[];
 }
 
 /** A compact saved-list summary for UI-facing tools. */
@@ -175,6 +191,9 @@ type OdaClientWithShoppingLists = {
 function summarizeCart(cart: OdaCart): CartOverview {
   return {
     itemCount: cart.item_count,
+    label: cart.label,
+    displayPrice: cart.display_price,
+    subtotalPrice: cart.subtotal_price,
     totalPrice: cart.total_price,
     currency: cart.currency,
     items: cart.items.map((item) => ({
@@ -182,7 +201,22 @@ function summarizeCart(cart: OdaCart): CartOverview {
       name: item.product.full_name,
       quantity: item.quantity,
       linePrice: item.line_price,
+      originalLinePrice: item.original_line_price,
+      unitPrice: item.unit_price,
+      label: item.label,
       available: item.product.is_available,
+    })),
+    summaryLines: cart.summary_lines.map((line) => ({
+      label: line.label,
+      price: line.price,
+      kind: line.kind,
+      details: line.details,
+    })),
+    feeLines: cart.fee_lines.map((line) => ({
+      label: line.label,
+      price: line.price,
+      kind: line.kind,
+      details: line.details,
     })),
   };
 }

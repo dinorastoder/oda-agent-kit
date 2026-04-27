@@ -4,6 +4,7 @@ export { analyzeOrderHistory, getHouseholdStaples, normalizeOrder } from './orde
 export {
   OdaAvailabilitySchema,
   OdaCartItemSchema,
+  OdaCartSummaryLineSchema,
   OdaCartSchema,
   OdaDeliverySlotSchema,
   OdaDiscountSchema,
@@ -36,6 +37,7 @@ export type {
   OdaAvailability,
   OdaCart,
   OdaCartItem,
+  OdaCartSummaryLine,
   OdaClientConfig,
   OdaClientOptions,
   OdaCredentials,
