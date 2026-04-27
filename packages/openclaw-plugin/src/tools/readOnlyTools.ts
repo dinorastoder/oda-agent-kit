@@ -59,9 +59,9 @@ interface SavedListLike {
   items: unknown[];
 }
 
-interface OdaClientWithShoppingLists extends OdaClient {
+type OdaClientWithShoppingLists = {
   getShoppingLists?: () => Promise<SavedListLike[]>;
-}
+};
 
 // ---------------------------------------------------------------------------
 // Tool implementations
