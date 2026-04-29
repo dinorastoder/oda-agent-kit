@@ -48,13 +48,38 @@ export interface OdaCartItem {
   id: number;
   product: OdaProduct;
   quantity: number;
+  /** Effective line total shown to the user, after discounts when available. */
   line_price: string;
+  /** Original undiscounted line total when the cart exposes a discounted total. */
+  original_line_price: string | null;
+  /** User-facing unit price shown in the cart. */
+  unit_price: string;
+  /** Optional upstream cart label, e.g. a campaign or discount badge. */
+  label: string | null;
+}
+
+/** A single non-item pricing line in the cart summary. */
+export interface OdaCartSummaryLine {
+  label: string;
+  price: string;
+  kind: 'item' | 'discount' | 'subtotal' | 'fee' | 'total' | 'other';
+  details: string | null;
 }
 
 /** The full cart object. */
 export interface OdaCart {
   id: number;
   items: OdaCartItem[];
+  /** Upstream display label for the visible item total, e.g. "1 vare". */
+  label: string | null;
+  /** Upstream visible item total before fee lines. */
+  display_price: string | null;
+  /** Effective subtotal of visible cart items before fee lines. */
+  subtotal_price: string;
+  /** Upstream summary lines in display order. */
+  summary_lines: OdaCartSummaryLine[];
+  /** Summary lines from `summary_lines` where `kind` is `'fee'`. */
+  fee_lines: OdaCartSummaryLine[];
   total_price: string;
   currency: string;
   item_count: number;

@@ -129,7 +129,7 @@ export function createOdaMcpServer(client: OdaReadOnlyClient, options: OdaMcpSer
   server.registerTool(
     'oda_get_cart',
     {
-      description: 'Retrieve the current Oda shopping cart.',
+      description: 'Retrieve the current Oda shopping cart, including subtotal and fee breakdown lines.',
       inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: READ_ONLY_TOOL_ANNOTATIONS,
     },

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Command } from 'commander';
 import { OdaClient } from '@oda-agent/core';
-import type { OdaDeliverySlot } from '@oda-agent/core';
+import type { OdaCart, OdaDeliverySlot } from '@oda-agent/core';
 
 type JsonOption = {
   json?: boolean;
@@ -9,6 +9,36 @@ type JsonOption = {
 
 function printJson(value: unknown): void {
   console.log(JSON.stringify(value, null, 2));
+}
+
+export function formatCartOutput(cart: OdaCart): string[] {
+  const lines = [`Cart (${cart.item_count} items)`];
+
+  if (cart.items.length === 0) {
+    lines.push('  No visible items in cart.');
+  } else {
+    for (const item of cart.items) {
+      const originalLinePrice = item.original_line_price ? ` (was ${item.original_line_price} ${cart.currency})` : '';
+      const label = item.label ? ` [${item.label}]` : '';
+      lines.push(`  ${item.quantity}x ${item.product.full_name} — ${item.line_price} ${cart.currency}${originalLinePrice}${label}`);
+    }
+  }
+
+  for (const summaryLine of cart.summary_lines) {
+    if (summaryLine.kind === 'item' || summaryLine.kind === 'discount') {
+      lines.push(`  ${summaryLine.label} — ${summaryLine.price} ${cart.currency}`);
+    }
+  }
+
+  lines.push(`Subtotal: ${cart.subtotal_price} ${cart.currency}`);
+
+  for (const feeLine of cart.fee_lines) {
+    lines.push(`  ${feeLine.label} — ${feeLine.price} ${cart.currency}`);
+  }
+
+  lines.push(`Total: ${cart.total_price} ${cart.currency}`);
+
+  return lines;
 }
 
 function hasCredentials(): boolean {
@@ -106,9 +136,8 @@ cart
     if (opts.json) {
       printJson(c);
     } else {
-      console.log(`Cart total: ${c.total_price} ${c.currency} (${c.item_count} items)`);
-      for (const item of c.items) {
-        console.log(`  ${item.quantity}x ${item.product.full_name} — ${item.line_price}`);
+      for (const line of formatCartOutput(c)) {
+        console.log(line);
       }
     }
   });

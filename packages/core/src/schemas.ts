@@ -3,6 +3,7 @@ import type {
   OdaAvailability,
   OdaCart,
   OdaCartItem,
+  OdaCartSummaryLine,
   OdaDeliverySlot,
   OdaDiscount,
   OdaOrder,
@@ -67,12 +68,28 @@ export const OdaCartItemSchema: z.ZodType<OdaCartItem> = z.object({
   product: OdaProductSchema,
   quantity: z.number().int(),
   line_price: z.string(),
+  original_line_price: z.string().nullable(),
+  unit_price: z.string(),
+  label: z.string().nullable(),
+});
+
+/** Zod schema for cart summary lines. */
+export const OdaCartSummaryLineSchema: z.ZodType<OdaCartSummaryLine> = z.object({
+  label: z.string(),
+  price: z.string(),
+  kind: z.enum(['item', 'discount', 'subtotal', 'fee', 'total', 'other']),
+  details: z.string().nullable(),
 });
 
 /** Zod schema for carts. */
 export const OdaCartSchema: z.ZodType<OdaCart> = z.object({
   id: z.number().int(),
   items: z.array(OdaCartItemSchema),
+  label: z.string().nullable(),
+  display_price: z.string().nullable(),
+  subtotal_price: z.string(),
+  summary_lines: z.array(OdaCartSummaryLineSchema),
+  fee_lines: z.array(OdaCartSummaryLineSchema),
   total_price: z.string(),
   currency: z.string(),
   item_count: z.number().int(),
@@ -164,12 +181,28 @@ export const OdaRawCartItemSchema = z.object({
   item_id: z.number().int(),
   product: OdaRawCartProductSchema,
   quantity: z.number().int(),
+  display_price: z.string().optional(),
   /** Line total price string (called `display_price_total` in the Oda cart API). */
   display_price_total: z.string(),
+  discounted_display_price_total: z.string().optional(),
+  label_text: z.string().nullable().optional(),
 }).passthrough();
 
 const OdaRawCartGroupSchema = z.object({
   items: z.array(OdaRawCartItemSchema),
+}).passthrough();
+
+const OdaRawCartSummaryLineItemSchema = z.object({
+  description: z.string(),
+  long_description: z.string().nullable(),
+  gross_amount: z.string(),
+  name: z.string(),
+  display_style: z.string().optional(),
+}).passthrough();
+
+const OdaRawCartSummarySectionSchema = z.object({
+  id: z.string(),
+  lines: z.array(OdaRawCartSummaryLineItemSchema),
 }).passthrough();
 
 /**
@@ -181,25 +214,80 @@ export const OdaRawCartSchema = z.object({
   id: z.number().int(),
   product_quantity_count: z.number().int(),
   total_gross_amount: z.string(),
+  label_text: z.string().nullable().optional(),
+  display_price: z.string().nullable().optional(),
+  currency: z.string().optional(),
+  summary_lines: z.array(OdaRawCartSummarySectionSchema).optional(),
   groups: z.array(OdaRawCartGroupSchema),
 }).passthrough();
 
 export type OdaRawCart = z.infer<typeof OdaRawCartSchema>;
 
+const DEFAULT_CART_CURRENCY = 'NOK';
+
+function priceToMinorUnits(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0;
+}
+
+function classifyCartSummaryLine(
+  sectionId: string,
+  lineName: string,
+  grossAmount: string,
+  displayStyle?: string,
+): OdaCartSummaryLine['kind'] {
+  const normalizedSectionId = sectionId.split('.').pop();
+
+  if (normalizedSectionId === 'TOTAL' || lineName === 'GrossTotalAmount') {
+    return 'total';
+  }
+
+  if (lineName === 'GrossSubtotalAmount' || (normalizedSectionId === 'SUBTOTAL' && displayStyle === 'primary')) {
+    return 'subtotal';
+  }
+
+  if (grossAmount.startsWith('-') || /discount/i.test(lineName)) {
+    return 'discount';
+  }
+
+  if (/fee/i.test(lineName)) {
+    return 'fee';
+  }
+
+  if (lineName === 'GrossAmount') {
+    return 'item';
+  }
+
+  return 'other';
+}
+
 /**
  * Normalise a raw Oda cart API response into the clean {@link OdaCart}
  * interface used throughout the rest of this package.
  *
- * The raw API response groups items under `groups[].items[]` and uses
- * `item_id`/`display_price_total` field names. This function flattens the
- * groups and maps field names to match `OdaCartItem`.
+ * The raw API response groups items under `groups[].items[]`, exposes
+ * discounted pricing on the item rows, and includes a `summary_lines[]`
+ * breakdown that explains how the final total is composed. This function
+ * flattens the groups, prefers discounted item totals when available, and
+ * preserves the pricing breakdown for downstream adapters.
  */
 export function normalizeCart(raw: OdaRawCart): OdaCart {
   const items: OdaCartItem[] = [];
+  const rawSummaryLines = raw.summary_lines ?? [];
+  const summaryLines: OdaCartSummaryLine[] = rawSummaryLines.flatMap((section) =>
+    section.lines.map((line) => ({
+      label: line.description,
+      price: line.gross_amount,
+      kind: classifyCartSummaryLine(section.id, line.name, line.gross_amount, line.display_style),
+      details: line.long_description,
+    })),
+  );
+  let subtotalMinorUnits = 0;
 
   for (const group of raw.groups) {
     for (const item of group.items) {
       const rawProduct = item.product as Record<string, unknown>;
+      const linePrice = item.discounted_display_price_total ?? item.display_price_total;
 
       const product: OdaProduct = {
         id: item.product.id,
@@ -226,16 +314,29 @@ export function normalizeCart(raw: OdaRawCart): OdaCart {
         id: item.item_id,
         product,
         quantity: item.quantity,
-        line_price: item.display_price_total,
+        line_price: linePrice,
+        original_line_price: item.discounted_display_price_total ? item.display_price_total : null,
+        unit_price: item.display_price ?? item.product.gross_price,
+        label: item.label_text ?? null,
       });
+      subtotalMinorUnits += priceToMinorUnits(linePrice);
     }
   }
+
+  const currency = raw.currency ?? items[0]?.product.currency ?? DEFAULT_CART_CURRENCY;
 
   return {
     id: raw.id,
     items,
+    label: raw.label_text ?? null,
+    display_price: raw.display_price ?? null,
+    subtotal_price:
+      summaryLines.find((line) => line.kind === 'subtotal')?.price
+      ?? (subtotalMinorUnits / 100).toFixed(2),
+    summary_lines: summaryLines,
+    fee_lines: summaryLines.filter((line) => line.kind === 'fee'),
     total_price: raw.total_gross_amount,
-    currency: 'NOK',
+    currency,
     item_count: raw.product_quantity_count,
   };
 }

@@ -30,6 +30,9 @@ describe('createOpenClawPlugin', () => {
               id: 10,
               quantity: 2,
               line_price: '59.80',
+              original_line_price: null,
+              unit_price: '29.90',
+              label: null,
               product: {
                 id: 42,
                 full_name: 'Oat Milk 1L',
@@ -50,6 +53,11 @@ describe('createOpenClawPlugin', () => {
               },
             },
           ],
+          label: '2 varer',
+          display_price: '59.80',
+          subtotal_price: '59.80',
+          summary_lines: [],
+          fee_lines: [],
           total_price: '59.80',
           currency: 'NOK',
           item_count: 2,
@@ -105,6 +113,21 @@ describe('createOpenClawPlugin', () => {
       const review = await plugin.reviewAccount();
 
       expect(review.cart?.itemCount).toBe(2);
+      expect(review.cart?.label).toBe('2 varer');
+      expect(review.cart?.displayPrice).toBe('59.80');
+      expect(review.cart?.subtotalPrice).toBe('59.80');
+      expect(review.cart?.summaryLines).toEqual([]);
+      expect(review.cart?.feeLines).toEqual([]);
+      expect(review.cart?.items[0]).toEqual({
+        productId: 42,
+        name: 'Oat Milk 1L',
+        quantity: 2,
+        linePrice: '59.80',
+        originalLinePrice: null,
+        unitPrice: '29.90',
+        label: null,
+        available: true,
+      });
       expect(review.savedLists).toEqual([{ id: 7, name: 'Weekly staples', itemCount: 2 }]);
       expect(review.orderHistory?.mostOrderedProducts[0]).toEqual({
         productId: 42,
@@ -113,6 +136,104 @@ describe('createOpenClawPlugin', () => {
         timesOrdered: 2,
       });
       expect(review.delivery?.cheapestSlot?.id).toBe(2);
+    });
+
+    it('includes subtotal and fee lines when cart totals exceed visible item prices', async () => {
+      const client = makeClient({
+        getCart: jest.fn().mockResolvedValue({
+          id: 1,
+          items: [
+            {
+              id: 11,
+              quantity: 1,
+              line_price: '30.00',
+              original_line_price: '51.90',
+              unit_price: '51.90',
+              label: 'Member discount',
+              product: {
+                id: 43,
+                full_name: 'Organic Avocados 2 pcs',
+                brand: 'Oda',
+                name: 'Organic Avocados',
+                front_url: '/products/43',
+                gross_price: '51.90',
+                gross_unit_price: '51.90',
+                unit_price_quantity_abbreviation: 'pk',
+                unit_price_quantity_name: 'pack',
+                currency: 'NOK',
+                is_available: true,
+                is_sponsored: false,
+                promoted_product: false,
+                images: [],
+                discount: null,
+                availability: { is_available: true, description: null },
+              },
+          },
+        ],
+        label: '1 vare',
+        display_price: '51.90',
+          subtotal_price: '30.00',
+          summary_lines: [
+            { label: '1 vare', price: '51.90', kind: 'item', details: null },
+            { label: 'Du sparer', price: '-21.90', kind: 'discount', details: null },
+            { label: 'Delsum', price: '30.00', kind: 'subtotal', details: null },
+            { label: 'Tillegg for mindre bestilling', price: '199.00', kind: 'fee', details: 'Under threshold fee' },
+            { label: 'Leveringsemballasje', price: '11.70', kind: 'fee', details: 'Packaging fee' },
+            { label: 'Total inkl. MVA', price: '240.70', kind: 'total', details: null },
+          ],
+          fee_lines: [
+            { label: 'Tillegg for mindre bestilling', price: '199.00', kind: 'fee', details: 'Under threshold fee' },
+            { label: 'Leveringsemballasje', price: '11.70', kind: 'fee', details: 'Packaging fee' },
+          ],
+          total_price: '240.70',
+          currency: 'NOK',
+          item_count: 1,
+        }),
+        getShoppingLists: jest.fn().mockResolvedValue([]),
+        getOrders: jest.fn().mockResolvedValue({
+          count: 0,
+          next: null,
+          previous: null,
+          results: [],
+        }),
+        getDeliverySlots: jest.fn().mockResolvedValue([]),
+      });
+
+      const plugin = createOpenClawPlugin(client);
+      const review = await plugin.reviewAccount();
+
+      expect(review.cart).toEqual({
+        itemCount: 1,
+        label: '1 vare',
+        displayPrice: '51.90',
+        subtotalPrice: '30.00',
+        totalPrice: '240.70',
+        currency: 'NOK',
+        items: [
+          {
+            productId: 43,
+            name: 'Organic Avocados 2 pcs',
+            quantity: 1,
+            linePrice: '30.00',
+            originalLinePrice: '51.90',
+            unitPrice: '51.90',
+            label: 'Member discount',
+            available: true,
+          },
+        ],
+        summaryLines: [
+          { label: '1 vare', price: '51.90', kind: 'item', details: null },
+          { label: 'Du sparer', price: '-21.90', kind: 'discount', details: null },
+          { label: 'Delsum', price: '30.00', kind: 'subtotal', details: null },
+          { label: 'Tillegg for mindre bestilling', price: '199.00', kind: 'fee', details: 'Under threshold fee' },
+          { label: 'Leveringsemballasje', price: '11.70', kind: 'fee', details: 'Packaging fee' },
+          { label: 'Total inkl. MVA', price: '240.70', kind: 'total', details: null },
+        ],
+        feeLines: [
+          { label: 'Tillegg for mindre bestilling', price: '199.00', kind: 'fee', details: 'Under threshold fee' },
+          { label: 'Leveringsemballasje', price: '11.70', kind: 'fee', details: 'Packaging fee' },
+        ],
+      });
     });
   });
 
