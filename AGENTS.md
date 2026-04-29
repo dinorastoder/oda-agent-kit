@@ -90,6 +90,6 @@ High-risk ordering tools are out of scope for v0.
 - Work in small PRs.
 - Prefer incremental changes over repo-wide restructuring.
 - Keep existing scripts and tests working: npm install, npm run build, npm test, npm run lint.
-- Use docs/copilot-prompts and docs/github-issues as optional planning aids.
+- Use docs/copilot-prompts as optional planning aids.
 
 Do not jump directly to full ordering automation.

@@ -132,6 +132,5 @@ Key patterns adopted from that reference:
 The repository includes optional Copilot planning artifacts in:
 
 - `docs/copilot-prompts/`
-- `docs/github-issues/`
 
 They can be used to manage iterative implementation work, but they are not required for normal development.
