@@ -192,9 +192,9 @@ jobs:
 
       - name: Install and smoke-test @oda-agent/openclaw-plugin (unpinned core)
         # Install only the plugin without pinning core — this mirrors what a
-        # real consumer does. The plugin declares "@oda-agent/core": "*" so npm
-        # will resolve whichever core version is available on the registry.
-        # This validates that the '*' dependency range works end-to-end.
+        # real consumer does. The plugin declares a SemVer-compatible core range,
+        # so npm resolves the matching published core release transitively.
+        # This validates that the published dependency range works end-to-end.
         run: |
           VERSION="${{ needs.publish.outputs.version }}"
           SMOKE_DIR="$(mktemp -d)"

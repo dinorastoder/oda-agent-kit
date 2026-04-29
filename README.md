@@ -23,6 +23,10 @@ const products = await client.searchProducts("milk");
 
 Terminal commands for local debugging and manual workflows.
 
+Cart reads preserve the visible Oda pricing breakdown, including discounted
+line totals, subtotal lines, and non-item fees such as small-order and
+packaging charges.
+
 ```bash
 npm install -g @oda-agent/cli
 
@@ -46,6 +50,9 @@ Exposes read-only tools.  See [Tool Contracts](docs/tool-contracts.md) for the f
 ### `@oda-agent/openclaw-plugin`
 
 OpenClaw plugin and skill registration for agentic grocery workflows.
+
+The shopping overview keeps cart details available even when optional account
+endpoints like saved lists or order history fail for a specific account.
 
 ```ts
 import odaPlugin from "@oda-agent/openclaw-plugin";

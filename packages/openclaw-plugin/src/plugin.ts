@@ -178,41 +178,82 @@ interface ResolvedShoppingRequests {
   unmatchedItems: UnmatchedGroceryRequest[];
 }
 
+interface CartOverviewItemLike {
+  product: OdaCart['items'][number]['product'];
+  quantity: number;
+  line_price: string;
+  original_line_price?: string | null;
+  unit_price?: string;
+  label?: string | null;
+}
+
+interface CartOverviewPriceLineLike {
+  label: string;
+  price: string;
+  kind: CartOverviewPriceLine['kind'];
+  details: string | null;
+}
+
+type OdaCartWithOverviewFields = OdaCart & {
+  label?: string | null;
+  display_price?: string | null;
+  subtotal_price?: string;
+  items?: CartOverviewItemLike[];
+  summary_lines?: CartOverviewPriceLineLike[];
+  fee_lines?: CartOverviewPriceLineLike[];
+};
+
 interface SavedListLike {
   id: number;
   name: string;
-  items: unknown[];
+  items?: unknown[];
 }
 
 type OdaClientWithShoppingLists = {
   getShoppingLists?: () => Promise<SavedListLike[]>;
 };
 
+function asArray<T>(value: T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function hasStatusCode(error: unknown, statusCode: number): boolean {
+  return typeof error === 'object'
+    && error !== null
+    && 'statusCode' in error
+    && (error as { statusCode?: number }).statusCode === statusCode;
+}
+
 function summarizeCart(cart: OdaCart): CartOverview {
+  const detailedCart = cart as OdaCartWithOverviewFields;
+  const items = asArray(detailedCart.items);
+  const summaryLines = asArray(detailedCart.summary_lines);
+  const feeLines = asArray(detailedCart.fee_lines);
+
   return {
     itemCount: cart.item_count,
-    label: cart.label,
-    displayPrice: cart.display_price,
-    subtotalPrice: cart.subtotal_price,
+    label: detailedCart.label ?? null,
+    displayPrice: detailedCart.display_price ?? null,
+    subtotalPrice: detailedCart.subtotal_price ?? cart.total_price,
     totalPrice: cart.total_price,
     currency: cart.currency,
-    items: cart.items.map((item) => ({
+    items: items.map((item) => ({
       productId: item.product.id,
       name: item.product.full_name,
       quantity: item.quantity,
       linePrice: item.line_price,
-      originalLinePrice: item.original_line_price,
-      unitPrice: item.unit_price,
-      label: item.label,
+      originalLinePrice: item.original_line_price ?? null,
+      unitPrice: item.unit_price ?? item.line_price,
+      label: item.label ?? null,
       available: item.product.is_available,
     })),
-    summaryLines: cart.summary_lines.map((line) => ({
+    summaryLines: summaryLines.map((line) => ({
       label: line.label,
       price: line.price,
       kind: line.kind,
       details: line.details,
     })),
-    feeLines: cart.fee_lines.map((line) => ({
+    feeLines: feeLines.map((line) => ({
       label: line.label,
       price: line.price,
       kind: line.kind,
@@ -222,10 +263,10 @@ function summarizeCart(cart: OdaCart): CartOverview {
 }
 
 function summarizeSavedLists(lists: SavedListLike[], maxSavedLists: number): SavedListOverview[] {
-  return lists.slice(0, maxSavedLists).map((list) => ({
+  return asArray(lists).slice(0, maxSavedLists).map((list) => ({
     id: list.id,
     name: list.name,
-    itemCount: list.items.length,
+    itemCount: asArray(list.items).length,
   }));
 }
 
@@ -236,11 +277,19 @@ async function loadShoppingLists(client: OdaClient): Promise<SavedListLike[]> {
     return [];
   }
 
-  return clientWithLists.getShoppingLists();
+  try {
+    return asArray(await clientWithLists.getShoppingLists());
+  } catch (error) {
+    if (hasStatusCode(error, 404)) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 function summarizeDeliverySlots(slots: OdaDeliverySlot[], maxDeliverySlots: number): AccountReview['delivery'] {
-  const available = slots
+  const available = asArray(slots)
     .filter((slot) => slot.is_available)
     .sort((left, right) => parseFloat(left.price) - parseFloat(right.price));
 
@@ -398,26 +447,38 @@ export function createOpenClawPlugin(client: OdaClient): OpenClawPlugin {
       }
 
       if (includeSavedLists) {
-        review.savedLists = summarizeSavedLists(await loadShoppingLists(client), maxSavedLists);
+        try {
+          review.savedLists = summarizeSavedLists(await loadShoppingLists(client), maxSavedLists);
+        } catch {
+          review.savedLists = [];
+        }
       }
 
       if (includeOrderHistory) {
-        const summary = await analyseOrderHistory(maxHistoryPages);
-        review.orderHistory = {
-          totalOrders: summary.totalOrders,
-          totalSpend: summary.totalSpend,
-          currency: summary.currency,
-          mostOrderedProducts: summary.mostOrderedProducts.map(({ product, timesOrdered }) => ({
-            productId: product.id,
-            name: product.full_name,
-            brand: product.brand,
-            timesOrdered,
-          })),
-        };
+        try {
+          const summary = await analyseOrderHistory(maxHistoryPages);
+          review.orderHistory = {
+            totalOrders: summary.totalOrders,
+            totalSpend: summary.totalSpend,
+            currency: summary.currency,
+            mostOrderedProducts: summary.mostOrderedProducts.map(({ product, timesOrdered }) => ({
+              productId: product.id,
+              name: product.full_name,
+              brand: product.brand,
+              timesOrdered,
+            })),
+          };
+        } catch {
+          review.orderHistory = undefined;
+        }
       }
 
       if (includeDelivery) {
-        review.delivery = summarizeDeliverySlots(await client.getDeliverySlots(), maxDeliverySlots);
+        try {
+          review.delivery = summarizeDeliverySlots(await client.getDeliverySlots(), maxDeliverySlots);
+        } catch {
+          review.delivery = undefined;
+        }
       }
 
       return review;

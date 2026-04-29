@@ -235,6 +235,102 @@ describe('createOpenClawPlugin', () => {
         ],
       });
     });
+
+    it('tolerates sparse cart and saved-list payloads', async () => {
+      const client = makeClient({
+        getCart: jest.fn().mockResolvedValue({
+          id: 1,
+          label: '0 varer',
+          display_price: null,
+          subtotal_price: '0.00',
+          total_price: '0.00',
+          currency: 'NOK',
+          item_count: 0,
+        } as unknown),
+        getShoppingLists: jest.fn().mockResolvedValue([
+          { id: 7, name: 'Weekly staples' } as unknown,
+        ]),
+        getOrders: jest.fn().mockResolvedValue({
+          count: 0,
+          next: null,
+          previous: null,
+          results: [],
+        }),
+        getDeliverySlots: jest.fn().mockResolvedValue(undefined),
+      });
+
+      const plugin = createOpenClawPlugin(client);
+      const review = await plugin.reviewAccount();
+
+      expect(review.cart).toEqual({
+        itemCount: 0,
+        label: '0 varer',
+        displayPrice: null,
+        subtotalPrice: '0.00',
+        totalPrice: '0.00',
+        currency: 'NOK',
+        items: [],
+        summaryLines: [],
+        feeLines: [],
+      });
+      expect(review.savedLists).toEqual([{ id: 7, name: 'Weekly staples', itemCount: 0 }]);
+      expect(review.delivery).toEqual({
+        availableSlotCount: 0,
+        cheapestSlot: undefined,
+        upcomingSlots: [],
+      });
+    });
+
+    it('ignores shopping list 404s and still returns the rest of the overview', async () => {
+      const client = makeClient({
+        getCart: jest.fn().mockResolvedValue({
+          id: 1,
+          items: [],
+          total_price: '240.70',
+          currency: 'NOK',
+          item_count: 1,
+        }),
+        getShoppingLists: jest.fn().mockRejectedValue({ statusCode: 404, message: '/shopping-lists/: HTTP 404' }),
+        getOrders: jest.fn().mockResolvedValue({
+          count: 0,
+          next: null,
+          previous: null,
+          results: [],
+        }),
+        getDeliverySlots: jest.fn().mockResolvedValue([]),
+      });
+
+      const plugin = createOpenClawPlugin(client);
+      const review = await plugin.reviewAccount();
+
+      expect(review.cart?.totalPrice).toBe('240.70');
+      expect(review.savedLists).toEqual([]);
+      expect(review.orderHistory?.totalOrders).toBe(0);
+      expect(review.delivery?.availableSlotCount).toBe(0);
+    });
+
+    it('returns cart details even when optional overview sections fail', async () => {
+      const client = makeClient({
+        getCart: jest.fn().mockResolvedValue({
+          id: 1,
+          items: [],
+          total_price: '240.70',
+          currency: 'NOK',
+          item_count: 1,
+        }),
+        getShoppingLists: jest.fn().mockRejectedValue({ statusCode: 404, message: '/shopping-lists/: HTTP 404' }),
+        getOrders: jest.fn().mockRejectedValue(new Error('Invalid Oda API response for /orders/?page=1')),
+        getDeliverySlots: jest.fn().mockRejectedValue(new Error('Delivery slots unavailable')),
+      });
+
+      const plugin = createOpenClawPlugin(client);
+      const review = await plugin.reviewAccount();
+
+      expect(review.cart?.totalPrice).toBe('240.70');
+      expect(review.savedLists).toEqual([]);
+      expect(review.orderHistory).toBeUndefined();
+      expect(review.delivery).toBeUndefined();
+    });
   });
 
   describe('buildShoppingList', () => {

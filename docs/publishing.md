@@ -43,12 +43,10 @@ when publishing:
 - Each package must be published individually. Both the workspace path form
   (`--workspace=packages/core`) and the package-name form
   (`--workspace=@oda-agent/core`) work; the examples below use the path form.
-- Workspace-local cross-dependencies currently use `"*"` (plain npm range, **not**
-  the `workspace:` protocol). The published tarball will therefore contain `"*"` as
-  the core dependency version, meaning any published version of `@oda-agent/core`
-  satisfies the requirement. To get deterministic pinning at publish time, migrate
-  to explicit version ranges (e.g. `"^0.2.0"`) or the `workspace:^` protocol before
-  each release.
+- Workspace-local cross-dependencies should use the current SemVer-compatible
+  release range for shared packages (for example `"^0.4.1"` for `@oda-agent/core`
+  when publishing `0.4.1`). This keeps published adapter packages aligned with the
+  core release they were validated against.
 - Always build (`npm run build`) **before** publishing so that `dist/` is up to date.
 
 ---
