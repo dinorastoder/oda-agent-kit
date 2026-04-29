@@ -89,7 +89,7 @@ describe('readOnlyTools', () => {
 
   describe('getCart', () => {
     it('delegates to client.getCart', async () => {
-      const mockCart: OdaCart = {
+      const mockCart = {
         id: 1,
         items: [],
         label: null,
@@ -100,7 +100,7 @@ describe('readOnlyTools', () => {
         total_price: '0.00',
         currency: 'NOK',
         item_count: 0,
-      };
+      } as OdaCart;
       const client = makeClient({
         getCart: jest.fn().mockResolvedValue(mockCart),
       });

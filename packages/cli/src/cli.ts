@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Command } from 'commander';
 import { OdaClient } from '@oda-agent/core';
 import type { OdaCart, OdaDeliverySlot } from '@oda-agent/core';
+import { version } from './version.js';
 
 type JsonOption = {
   json?: boolean;
@@ -65,7 +66,7 @@ const program = new Command();
 program
   .name('oda')
   .description('CLI for the Oda grocery API')
-  .version('0.1.0');
+  .version(version);
 
 const auth = program.command('auth').description('Authentication helpers');
 

@@ -1,4 +1,5 @@
 import { formatCartOutput, program } from '../cli';
+import { version } from '../version';
 
 function findCommand(path: string[]) {
   let current = program;
@@ -20,7 +21,7 @@ describe('CLI program', () => {
   });
 
   it('has the correct version', () => {
-    expect(program.version()).toBe('0.1.0');
+    expect(program.version()).toBe(version);
   });
 
   it('registers expected subcommands', () => {
