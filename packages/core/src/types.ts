@@ -78,7 +78,7 @@ export interface OdaCart {
   subtotal_price: string;
   /** Upstream summary lines in display order. */
   summary_lines: OdaCartSummaryLine[];
-  /** Summary lines after the subtotal line, typically fees or adjustments. */
+  /** Summary lines from `summary_lines` where `kind` is `'fee'`. */
   fee_lines: OdaCartSummaryLine[];
   total_price: string;
   currency: string;
