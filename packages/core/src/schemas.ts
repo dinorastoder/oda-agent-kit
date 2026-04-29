@@ -9,7 +9,6 @@ import type {
   OdaOrder,
   OdaOrderItem,
   OdaPage,
-  OdaProductListSummary,
   OdaProduct,
   OdaProductImage,
   OdaProductImageAsset,
@@ -136,7 +135,7 @@ const OdaProductListImageSchema = z.object({
   large: OdaProductImageAssetSchema.optional(),
 }).passthrough();
 
-const OdaProductListProductSchema: z.ZodType<OdaProduct> = z.object({
+const OdaProductListProductSchema = z.object({
   id: z.number().int(),
   fullName: z.string(),
   brand: z.string().nullable(),
@@ -189,7 +188,7 @@ const OdaProductListProductSchema: z.ZodType<OdaProduct> = z.object({
 });
 
 /** Zod schema for normalized product-list overview entries. */
-export const OdaProductListSummarySchema: z.ZodType<OdaProductListSummary> = z.object({
+export const OdaProductListSummarySchema = z.object({
   id: z.number().int(),
   title: z.string(),
   url: z.string(),
@@ -208,7 +207,7 @@ export const OdaProductListSummarySchema: z.ZodType<OdaProductListSummary> = z.o
 }));
 
 /** Zod schema for normalized product-list detail responses. */
-export const OdaProductListDetailSchema: z.ZodType<OdaShoppingList> = z.object({
+export const OdaProductListDetailSchema = z.object({
   id: z.number().int(),
   title: z.string(),
   items: z.array(z.object({

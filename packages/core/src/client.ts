@@ -403,7 +403,7 @@ export class OdaClient {
     return headers;
   }
 
-  private async get<T>(path: string, schema: z.ZodType<T>): Promise<T> {
+  private async get<T>(path: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
     const response = await this.httpClient.request({
       method: 'GET',
       path,
@@ -412,7 +412,7 @@ export class OdaClient {
     return this.parseResponse(path, response, schema);
   }
 
-  private async post<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+  private async post<T>(path: string, body: unknown, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
     const response = await this.httpClient.request({
       method: 'POST',
       path,
@@ -422,7 +422,7 @@ export class OdaClient {
     return this.parseResponse(path, response, schema);
   }
 
-  private async parseResponse<T>(path: string, response: OdaHttpResponse, schema: z.ZodType<T>): Promise<T> {
+  private async parseResponse<T>(path: string, response: OdaHttpResponse, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
     if (!response.ok) {
       throw await this.createApiError(path, response, `HTTP ${response.status}`);
     }
