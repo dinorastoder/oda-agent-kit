@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/openclaw-plugin",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "OpenClaw plugin for safe grocery planning and Oda automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@oda-agent/core": "^0.4.2"
+    "@oda-agent/core": "^0.5.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

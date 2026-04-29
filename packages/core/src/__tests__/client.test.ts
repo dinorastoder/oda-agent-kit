@@ -1,6 +1,8 @@
 import { OdaClient, OdaApiError } from '../client';
 import type { OdaHttpClient, OdaHttpResponse, OdaSessionStore } from '../types';
 import cartFixture from './fixtures/cart.json';
+import productListDetailFixture from './fixtures/product-list-detail.json';
+import productListsPageFixture from './fixtures/product-lists-page.json';
 import searchResponseFixture from './fixtures/search-response.json';
 
 function createJsonResponse(body: unknown, status = 200, cookies: Record<string, string> = {}): OdaHttpResponse {
@@ -94,6 +96,54 @@ describe('OdaClient', () => {
     expect(searchResponse.results[0]?.id).toBe(123);
     // cart fixture is in the real API format (groups[]); getCart() normalises it
     expect(cart.items[0]?.quantity).toBe(2);
+    expect(httpClient.request).toHaveBeenCalledTimes(2);
+  });
+
+  it('retrieves product-list summaries from the live saved-lists endpoint', async () => {
+    const httpClient: OdaHttpClient = {
+      request: jest.fn(async () => createJsonResponse(productListsPageFixture)),
+    };
+    const client = new OdaClient({ httpClient });
+
+    const lists = await client.getProductLists();
+
+    expect(lists).toEqual([
+      expect.objectContaining({
+        id: 430128,
+        name: 'Standard groceries',
+        number_of_products: 13,
+      }),
+    ]);
+    expect(httpClient.request).toHaveBeenCalledWith(expect.objectContaining({
+      method: 'GET',
+      path: '/product-lists/?filter=product_lists&sort=default&size=50&page=1',
+    }));
+  });
+
+  it('hydrates saved shopping lists from product-list detail endpoints', async () => {
+    const httpClient: OdaHttpClient = {
+      request: jest.fn(async ({ path }) => {
+        if (path === '/product-lists/?filter=product_lists&sort=default&size=50&page=1') {
+          return createJsonResponse(productListsPageFixture);
+        }
+
+        if (path === '/product-lists/430128/') {
+          return createJsonResponse(productListDetailFixture);
+        }
+
+        throw new Error(`Unexpected path: ${path}`);
+      }),
+    };
+    const client = new OdaClient({ httpClient });
+
+    const lists = await client.getShoppingLists();
+
+    expect(lists).toHaveLength(1);
+    expect(lists[0]).toEqual(expect.objectContaining({
+      id: 430128,
+      name: 'Standard groceries',
+    }));
+    expect(lists[0]?.items[0]?.product.full_name).toBe('Tine Lettmelk 0,5% fett');
     expect(httpClient.request).toHaveBeenCalledTimes(2);
   });
 });

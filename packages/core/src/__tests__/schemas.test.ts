@@ -3,6 +3,8 @@ import {
   createOdaPageSchema,
   normalizeCart,
   OdaDeliverySlotSchema,
+  OdaProductListDetailSchema,
+  OdaProductListSummaryPageSchema,
   OdaRawCartSchema,
   OdaSearchResponseSchema,
   OdaShoppingListSchema,
@@ -12,6 +14,8 @@ import cartFixture from './fixtures/cart.json';
 import cartWithFeesFixture from './fixtures/cart-with-fees.json';
 import deliverySlotsFixture from './fixtures/delivery-slots.json';
 import ordersPageFixture from './fixtures/orders-page.json';
+import productListDetailFixture from './fixtures/product-list-detail.json';
+import productListsPageFixture from './fixtures/product-lists-page.json';
 import searchResponseFixture from './fixtures/search-response.json';
 import shoppingListsFixture from './fixtures/shopping-lists.json';
 
@@ -114,5 +118,23 @@ describe('core schemas', () => {
 
     expect(parsed[0]?.name).toBe('Weekly staples');
     expect(parsed[0]?.items[0]?.quantity).toBe(3);
+  });
+
+  it('parses live product-list overview fixtures', () => {
+    const parsed = OdaProductListSummaryPageSchema.parse(productListsPageFixture);
+
+    expect(parsed.results[0]?.name).toBe('Standard groceries');
+    expect(parsed.results[0]?.number_of_items).toBe(14);
+  });
+
+  it('parses live product-list detail fixtures into shopping lists', () => {
+    const parsed = OdaProductListDetailSchema.parse(productListDetailFixture);
+
+    expect(parsed.name).toBe('Standard groceries');
+    expect(parsed.items[0]?.product.full_name).toBe('Tine Lettmelk 0,5% fett');
+    expect(parsed.items[0]?.product.images[0]?.small_thumbnail.url).toBe(
+      'https://images.oda.com/local_products/milk-thumb.jpg',
+    );
+    expect(parsed.items[0]?.quantity).toBe(2);
   });
 });

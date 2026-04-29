@@ -1,0 +1,76 @@
+{
+  "id": 430128,
+  "title": "Standard groceries",
+  "items": [
+    {
+      "product": {
+        "id": 12079,
+        "fullName": "Tine Lettmelk 0,5% fett",
+        "brand": "TINE",
+        "name": "Tine Lettmelk",
+        "frontUrl": "https://oda.com/no/products/12079-tine-tine-lettmelk-05-fett/",
+        "absoluteUrl": "/no/products/12079-tine-tine-lettmelk-05-fett/",
+        "grossPrice": "29.90",
+        "grossUnitPrice": "17.09",
+        "unitPriceQuantityAbbreviation": "l",
+        "unitPriceQuantityName": "liter",
+        "currency": "NOK",
+        "availability": {
+          "isAvailable": true,
+          "description": ""
+        },
+        "metadata": {
+          "isSponsorLabeled": null,
+          "isPromoted": null
+        },
+        "images": [
+          {
+            "large": {
+              "url": "https://images.oda.com/local_products/milk-large.jpg"
+            },
+            "thumbnail": {
+              "url": "https://images.oda.com/local_products/milk-thumb.jpg"
+            },
+            "variant": "main"
+          }
+        ]
+      },
+      "quantity": 2
+    },
+    {
+      "product": {
+        "id": 28870,
+        "fullName": "Prior Frokostegg fra frittgående høner Str L",
+        "brand": "Prior",
+        "name": "Frokostegg fra frittgående høner",
+        "frontUrl": "https://oda.com/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
+        "absoluteUrl": "/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
+        "grossPrice": "56.70",
+        "grossUnitPrice": "69.49",
+        "unitPriceQuantityAbbreviation": "kg",
+        "unitPriceQuantityName": "kilogram",
+        "currency": "NOK",
+        "availability": {
+          "isAvailable": true,
+          "description": ""
+        },
+        "metadata": {
+          "isSponsorLabeled": null,
+          "isPromoted": null
+        },
+        "images": [
+          {
+            "large": {
+              "url": "https://images.oda.com/local_products/eggs-large.jpg"
+            },
+            "thumbnail": {
+              "url": "https://images.oda.com/local_products/eggs-thumb.jpg"
+            },
+            "variant": "main"
+          }
+        ]
+      },
+      "quantity": 1
+    }
+  ]
+}

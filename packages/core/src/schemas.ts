@@ -125,6 +125,108 @@ export const OdaShoppingListSchema: z.ZodType<OdaShoppingList> = z.object({
   items: z.array(OdaShoppingListItemSchema),
 });
 
+const OdaProductListAvailabilitySchema = z.object({
+  isAvailable: z.boolean(),
+  description: z.string().nullable().optional(),
+}).passthrough();
+
+const OdaProductListImageSchema = z.object({
+  thumbnail: OdaProductImageAssetSchema.optional(),
+  large: OdaProductImageAssetSchema.optional(),
+}).passthrough();
+
+const OdaProductListProductSchema = z.object({
+  id: z.number().int(),
+  fullName: z.string(),
+  brand: z.string().nullable(),
+  name: z.string(),
+  frontUrl: z.string().optional(),
+  absoluteUrl: z.string().optional(),
+  grossPrice: z.string(),
+  grossUnitPrice: z.string(),
+  unitPriceQuantityAbbreviation: z.string(),
+  unitPriceQuantityName: z.string(),
+  currency: z.string(),
+  availability: OdaProductListAvailabilitySchema,
+  images: z.array(OdaProductListImageSchema),
+  metadata: z.object({
+    isSponsorLabeled: z.boolean().nullable().optional(),
+    isPromoted: z.boolean().nullable().optional(),
+  }).passthrough().optional(),
+}).passthrough().transform((product) => {
+  const firstImage = product.images[0];
+  const thumbnail = firstImage?.thumbnail ?? firstImage?.large ?? { url: '' };
+  const large = firstImage?.large ?? firstImage?.thumbnail ?? thumbnail;
+
+  return {
+    id: product.id,
+    full_name: product.fullName,
+    brand: product.brand,
+    name: product.name,
+    front_url: product.absoluteUrl ?? product.frontUrl ?? '',
+    gross_price: product.grossPrice,
+    gross_unit_price: product.grossUnitPrice,
+    unit_price_quantity_abbreviation: product.unitPriceQuantityAbbreviation,
+    unit_price_quantity_name: product.unitPriceQuantityName,
+    currency: product.currency,
+    is_available: product.availability.isAvailable,
+    is_sponsored: product.metadata?.isSponsorLabeled ?? false,
+    promoted_product: product.metadata?.isPromoted ?? false,
+    images: [
+      {
+        thumbnail,
+        small_thumbnail: thumbnail,
+        large_thumbnail: large,
+      },
+    ],
+    discount: null,
+    availability: {
+      is_available: product.availability.isAvailable,
+      description: product.availability.description ?? null,
+    },
+  };
+});
+
+/** Zod schema for normalized product-list overview entries. */
+export const OdaProductListSummarySchema = z.object({
+  id: z.number().int(),
+  title: z.string(),
+  url: z.string(),
+  totalQuantity: z.number().int(),
+  numberOfProducts: z.number().int(),
+  numberOfItems: z.number().int(),
+  productIds: z.array(z.number().int()),
+}).passthrough().transform((list) => ({
+  id: list.id,
+  name: list.title,
+  url: list.url,
+  total_quantity: list.totalQuantity,
+  number_of_products: list.numberOfProducts,
+  number_of_items: list.numberOfItems,
+  product_ids: list.productIds,
+}));
+
+/** Zod schema for normalized product-list detail responses. */
+export const OdaProductListDetailSchema = z.object({
+  id: z.number().int(),
+  title: z.string(),
+  items: z.array(z.object({
+    product: OdaProductListProductSchema,
+    quantity: z.number().int(),
+  }).passthrough()),
+}).passthrough().transform((list) => ({
+  id: list.id,
+  name: list.title,
+  items: list.items,
+}));
+
+/** Zod schema for product-list overview pages. */
+export const OdaProductListSummaryPageSchema = z.object({
+  next: z.string().nullable(),
+  previous: z.string().nullable(),
+  results: z.array(OdaProductListSummarySchema),
+}).passthrough();
+
 /** Zod schema for delivery slots. */
 export const OdaDeliverySlotSchema: z.ZodType<OdaDeliverySlot> = z.object({
   id: z.number().int(),
