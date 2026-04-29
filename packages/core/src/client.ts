@@ -4,10 +4,11 @@ import {
   normalizeCart,
   OdaDeliverySlotSchema,
   OdaOrderSchema,
+  OdaProductListDetailSchema,
+  OdaProductListSummaryPageSchema,
   OdaProductSchema,
   OdaRawCartSchema,
   OdaSearchResponseSchema,
-  OdaShoppingListSchema,
 } from './schemas.js';
 import { buildUrl, DEFAULT_BASE_URL } from './utils.js';
 import type {
@@ -21,6 +22,7 @@ import type {
   OdaHttpResponse,
   OdaOrder,
   OdaPage,
+  OdaProductListSummary,
   OdaProduct,
   OdaSearchResponse,
   OdaSessionStore,
@@ -340,9 +342,25 @@ export class OdaClient {
     return this.get(`/orders/${orderId}/`, OdaOrderSchema);
   }
 
+  /** List product-list summaries from the live Oda saved-lists endpoint. */
+  async getProductLists(page = 1, size = 50): Promise<OdaProductListSummary[]> {
+    const response = await this.get(
+      `/product-lists/?filter=product_lists&sort=default&size=${size}&page=${page}`,
+      OdaProductListSummaryPageSchema,
+    );
+
+    return response.results;
+  }
+
+  /** Get a single saved-list detail from the live product-lists endpoint. */
+  async getProductList(listId: number): Promise<OdaShoppingList> {
+    return this.get(`/product-lists/${listId}/`, OdaProductListDetailSchema);
+  }
+
   /** List saved shopping lists. */
   async getShoppingLists(): Promise<OdaShoppingList[]> {
-    return this.get('/shopping-lists/', z.array(OdaShoppingListSchema));
+    const lists = await this.getProductLists();
+    return Promise.all(lists.map((list) => this.getProductList(list.id)));
   }
 
   /** List available delivery slots. */

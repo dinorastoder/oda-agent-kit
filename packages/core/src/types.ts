@@ -115,6 +115,17 @@ export interface OdaShoppingList {
   items: OdaShoppingListItem[];
 }
 
+/** A normalized product-list overview entry. */
+export interface OdaProductListSummary {
+  id: number;
+  name: string;
+  url: string;
+  total_quantity: number;
+  number_of_products: number;
+  number_of_items: number;
+  product_ids: number[];
+}
+
 /** A delivery time slot. */
 export interface OdaDeliverySlot {
   id: number;
