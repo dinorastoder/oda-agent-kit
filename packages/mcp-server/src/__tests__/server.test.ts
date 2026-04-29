@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import packageJson from '../../package.json';
+import { version } from '../version';
 import {
   createOdaMcpServer,
   EMPTY_INPUT_SCHEMA_JSON,
@@ -93,7 +93,7 @@ async function connectTestClient(client: Parameters<typeof createOdaMcpServer>[0
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const mcpClient = new Client({
     name: 'test-client',
-    version: packageJson.version,
+    version,
   });
 
   await Promise.all([server.connect(serverTransport), mcpClient.connect(clientTransport)]);

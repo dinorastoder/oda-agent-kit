@@ -224,6 +224,16 @@ function hasStatusCode(error: unknown, statusCode: number): boolean {
     && (error as { statusCode?: number }).statusCode === statusCode;
 }
 
+function deriveUnitPrice(item: CartOverviewItemLike): string {
+  if (item.unit_price) {
+    return item.unit_price;
+  }
+  if (item.quantity > 0) {
+    return (parseFloat(item.line_price) / item.quantity).toFixed(2);
+  }
+  return item.line_price;
+}
+
 function summarizeCart(cart: OdaCart): CartOverview {
   const detailedCart = cart as OdaCartWithOverviewFields;
   const items = asArray(detailedCart.items);
@@ -243,7 +253,7 @@ function summarizeCart(cart: OdaCart): CartOverview {
       quantity: item.quantity,
       linePrice: item.line_price,
       originalLinePrice: item.original_line_price ?? null,
-      unitPrice: item.unit_price ?? item.line_price,
+      unitPrice: deriveUnitPrice(item),
       label: item.label ?? null,
       available: item.product.is_available,
     })),
