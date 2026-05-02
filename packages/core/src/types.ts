@@ -123,6 +123,7 @@ export interface OdaProductListSummary {
   total_quantity: number;
   number_of_products: number;
   number_of_items: number;
+  /** Product IDs in the list. Empty array when the API omits the field. */
   product_ids: number[];
 }
 

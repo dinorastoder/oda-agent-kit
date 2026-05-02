@@ -195,7 +195,8 @@ export const OdaProductListSummarySchema = z.object({
   totalQuantity: z.number().int(),
   numberOfProducts: z.number().int(),
   numberOfItems: z.number().int(),
-  productIds: z.array(z.number().int()),
+  // The real API does not always include productIds; treat as optional.
+  productIds: z.array(z.number().int()).optional(),
 }).passthrough().transform((list) => ({
   id: list.id,
   name: list.title,
@@ -203,7 +204,7 @@ export const OdaProductListSummarySchema = z.object({
   total_quantity: list.totalQuantity,
   number_of_products: list.numberOfProducts,
   number_of_items: list.numberOfItems,
-  product_ids: list.productIds,
+  product_ids: list.productIds ?? [],
 }));
 
 /** Zod schema for normalized product-list detail responses. */

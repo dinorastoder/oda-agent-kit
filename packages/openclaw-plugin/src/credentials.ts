@@ -11,9 +11,11 @@ function readEnvironmentValue(env: NodeJS.ProcessEnv, name: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-export function readEnvironmentCredentials(env: NodeJS.ProcessEnv = process.env ?? {}): PluginCredentials {
-  const email = readEnvironmentValue(env, ODA_EMAIL_ENV_VAR);
-  const password = readEnvironmentValue(env, ODA_PASSWORD_ENV_VAR);
+export function readEnvironmentCredentials(env: NodeJS.ProcessEnv = process.env): PluginCredentials {
+  // Guard against null/undefined passed at runtime (e.g. from untyped JS callers).
+  const safeEnv: NodeJS.ProcessEnv = env ?? {};
+  const email = readEnvironmentValue(safeEnv, ODA_EMAIL_ENV_VAR);
+  const password = readEnvironmentValue(safeEnv, ODA_PASSWORD_ENV_VAR);
 
   if (!email || !password) {
     throw new Error(

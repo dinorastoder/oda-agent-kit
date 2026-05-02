@@ -39,6 +39,7 @@ describe('CLI program', () => {
     expect(findCommand(['cart', 'get'])).toBeDefined();
     expect(findCommand(['orders', 'list'])).toBeDefined();
     expect(findCommand(['lists', 'list'])).toBeDefined();
+    expect(findCommand(['lists', 'get'])).toBeDefined();
     expect(findCommand(['slots', 'list'])).toBeDefined();
   });
 
@@ -49,6 +50,7 @@ describe('CLI program', () => {
       ['cart', 'get'],
       ['orders', 'list'],
       ['lists', 'list'],
+      ['lists', 'get'],
       ['slots', 'list'],
     ];
 

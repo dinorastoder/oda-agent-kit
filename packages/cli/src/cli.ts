@@ -195,24 +195,44 @@ const lists = program.command('lists').description('Saved shopping lists');
 
 lists
   .command('list')
-  .description('List saved shopping lists')
+  .description('List saved shopping list summaries')
   .option('--json', 'Output raw JSON')
   .action(async (opts: JsonOption) => {
     const client = createClient();
     await client.login();
-    const shoppingLists = await client.getShoppingLists();
+    // Use the lightweight summary endpoint — avoids N+1 detail fetches just for item counts.
+    const summaries = await client.getProductLists();
     if (opts.json) {
-      printJson(shoppingLists);
+      printJson(summaries);
       return;
     }
 
-    if (shoppingLists.length === 0) {
+    if (summaries.length === 0) {
       console.log('No shopping lists found.');
       return;
     }
 
-    for (const list of shoppingLists) {
-      console.log(`[${list.id}] ${list.name} (${list.items.length} items)`);
+    for (const list of summaries) {
+      console.log(`[${list.id}] ${list.name} (${list.number_of_items} items)`);
+    }
+  });
+
+lists
+  .command('get <listId>')
+  .description('Show full details of a shopping list')
+  .option('--json', 'Output raw JSON')
+  .action(async (listId: string, opts: JsonOption) => {
+    const client = createClient();
+    await client.login();
+    const detail = await client.getProductList(parseInt(listId, 10));
+    if (opts.json) {
+      printJson(detail);
+      return;
+    }
+
+    console.log(`[${detail.id}] ${detail.name} (${detail.items.length} items)`);
+    for (const item of detail.items) {
+      console.log(`  ${item.quantity}x ${item.product.full_name} — ${item.product.gross_price} ${item.product.currency}`);
     }
   });
 
