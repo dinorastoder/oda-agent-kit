@@ -5,6 +5,7 @@
   "description": "Browse groceries, review your shopping context, and apply confirmed cart changes.",
   "author": "oda-agent-kit",
   "license": "MIT",
+  "runtime": "node",
   "configSchema": {
     "type": "object",
     "description": "Set ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw. Reload the plugin after changing either value.",
