@@ -54,11 +54,5 @@
         }
       ]
     }
-  ],
-  "skills": [
-    {
-      "name": "oda-shopping-assistant",
-      "path": "skills/oda-shopping-assistant/SKILL.md"
-    }
   ]
 }
