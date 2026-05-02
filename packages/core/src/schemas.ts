@@ -126,7 +126,7 @@ export const OdaShoppingListSchema: z.ZodType<OdaShoppingList> = z.object({
 });
 
 const OdaProductListAvailabilitySchema = z.object({
-  isAvailable: z.boolean(),
+  is_available: z.boolean(),
   description: z.string().nullable().optional(),
 }).passthrough();
 
@@ -135,23 +135,30 @@ const OdaProductListImageSchema = z.object({
   large: OdaProductImageAssetSchema.optional(),
 }).passthrough();
 
+/**
+ * Product schema for the product-lists REST endpoint.
+ *
+ * The real Oda API uses snake_case throughout (e.g. `full_name`, `gross_price`).
+ * The transform normalises image variants into the OdaProductImage shape used
+ * by the rest of the codebase.
+ */
 const OdaProductListProductSchema = z.object({
   id: z.number().int(),
-  fullName: z.string(),
+  full_name: z.string(),
   brand: z.string().nullable(),
   name: z.string(),
-  frontUrl: z.string().optional(),
-  absoluteUrl: z.string().optional(),
-  grossPrice: z.string(),
-  grossUnitPrice: z.string(),
-  unitPriceQuantityAbbreviation: z.string(),
-  unitPriceQuantityName: z.string(),
+  front_url: z.string().optional(),
+  absolute_url: z.string().optional(),
+  gross_price: z.string(),
+  gross_unit_price: z.string(),
+  unit_price_quantity_abbreviation: z.string(),
+  unit_price_quantity_name: z.string(),
   currency: z.string(),
   availability: OdaProductListAvailabilitySchema,
   images: z.array(OdaProductListImageSchema),
   metadata: z.object({
-    isSponsorLabeled: z.boolean().nullable().optional(),
-    isPromoted: z.boolean().nullable().optional(),
+    is_sponsor_labeled: z.boolean().nullable().optional(),
+    is_promoted: z.boolean().nullable().optional(),
   }).passthrough().optional(),
 }).passthrough().transform((product) => {
   const firstImage = product.images[0];
@@ -160,18 +167,18 @@ const OdaProductListProductSchema = z.object({
 
   return {
     id: product.id,
-    full_name: product.fullName,
+    full_name: product.full_name,
     brand: product.brand,
     name: product.name,
-    front_url: product.absoluteUrl ?? product.frontUrl ?? '',
-    gross_price: product.grossPrice,
-    gross_unit_price: product.grossUnitPrice,
-    unit_price_quantity_abbreviation: product.unitPriceQuantityAbbreviation,
-    unit_price_quantity_name: product.unitPriceQuantityName,
+    front_url: product.absolute_url ?? product.front_url ?? '',
+    gross_price: product.gross_price,
+    gross_unit_price: product.gross_unit_price,
+    unit_price_quantity_abbreviation: product.unit_price_quantity_abbreviation,
+    unit_price_quantity_name: product.unit_price_quantity_name,
     currency: product.currency,
-    is_available: product.availability.isAvailable,
-    is_sponsored: product.metadata?.isSponsorLabeled ?? false,
-    promoted_product: product.metadata?.isPromoted ?? false,
+    is_available: product.availability.is_available,
+    is_sponsored: product.metadata?.is_sponsor_labeled ?? false,
+    promoted_product: product.metadata?.is_promoted ?? false,
     images: [
       {
         thumbnail,
@@ -181,7 +188,7 @@ const OdaProductListProductSchema = z.object({
     ],
     discount: null,
     availability: {
-      is_available: product.availability.isAvailable,
+      is_available: product.availability.is_available,
       description: product.availability.description ?? null,
     },
   };
@@ -192,18 +199,19 @@ export const OdaProductListSummarySchema = z.object({
   id: z.number().int(),
   title: z.string(),
   url: z.string(),
-  totalQuantity: z.number().int(),
-  numberOfProducts: z.number().int(),
-  numberOfItems: z.number().int(),
-  productIds: z.array(z.number().int()),
+  total_quantity: z.number().int(),
+  number_of_products: z.number().int(),
+  number_of_items: z.number().int(),
+  // The real API may omit product_ids on some list types; treat as optional.
+  product_ids: z.array(z.number().int()).optional(),
 }).passthrough().transform((list) => ({
   id: list.id,
   name: list.title,
   url: list.url,
-  total_quantity: list.totalQuantity,
-  number_of_products: list.numberOfProducts,
-  number_of_items: list.numberOfItems,
-  product_ids: list.productIds,
+  total_quantity: list.total_quantity,
+  number_of_products: list.number_of_products,
+  number_of_items: list.number_of_items,
+  product_ids: list.product_ids ?? [],
 }));
 
 /** Zod schema for normalized product-list detail responses. */
