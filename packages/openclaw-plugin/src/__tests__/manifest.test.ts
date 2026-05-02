@@ -17,18 +17,11 @@ interface ToolGroup {
   tools: ToolEntry[];
 }
 
-// Minimal shape of a skill entry
-interface SkillEntry {
-  name: string;
-  path: string;
-}
-
 // Full manifest shape we expect
 interface OpenClawManifest {
   id: string;
   configSchema: Record<string, unknown>;
   toolGroups: ToolGroup[];
-  skills: SkillEntry[];
   [key: string]: unknown;
 }
 
@@ -132,31 +125,6 @@ describe('openclaw.plugin.json manifest', () => {
       const highRisk = manifest.toolGroups.find((g) => g.name === 'high-risk');
       expect(highRisk).toBeDefined();
       expect(highRisk?.enabled).toBe(false);
-    });
-  });
-
-  describe('skills', () => {
-    it('has a skills array', () => {
-      expect(Array.isArray(manifest.skills)).toBe(true);
-      expect(manifest.skills.length).toBeGreaterThan(0);
-    });
-
-    it('each skill has name and path', () => {
-      for (const skill of manifest.skills) {
-        expect(typeof skill.name).toBe('string');
-        expect(skill.name.length).toBeGreaterThan(0);
-
-        expect(typeof skill.path).toBe('string');
-        expect(skill.path.length).toBeGreaterThan(0);
-      }
-    });
-
-    it('skill files exist on disk', () => {
-      const pluginRoot = path.resolve(__dirname, '../..');
-      for (const skill of manifest.skills) {
-        const skillPath = path.resolve(pluginRoot, skill.path);
-        expect(fs.existsSync(skillPath)).toBe(true);
-      }
     });
   });
 });
