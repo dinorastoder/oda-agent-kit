@@ -5,23 +5,23 @@
     {
       "product": {
         "id": 12079,
-        "fullName": "Tine Lettmelk 0,5% fett",
+        "full_name": "Tine Lettmelk 0,5% fett",
         "brand": "TINE",
         "name": "Tine Lettmelk",
-        "frontUrl": "https://oda.com/no/products/12079-tine-tine-lettmelk-05-fett/",
-        "absoluteUrl": "/no/products/12079-tine-tine-lettmelk-05-fett/",
-        "grossPrice": "29.90",
-        "grossUnitPrice": "17.09",
-        "unitPriceQuantityAbbreviation": "l",
-        "unitPriceQuantityName": "liter",
+        "front_url": "https://oda.com/no/products/12079-tine-tine-lettmelk-05-fett/",
+        "absolute_url": "/no/products/12079-tine-tine-lettmelk-05-fett/",
+        "gross_price": "29.90",
+        "gross_unit_price": "17.09",
+        "unit_price_quantity_abbreviation": "l",
+        "unit_price_quantity_name": "liter",
         "currency": "NOK",
         "availability": {
-          "isAvailable": true,
+          "is_available": true,
           "description": ""
         },
         "metadata": {
-          "isSponsorLabeled": null,
-          "isPromoted": null
+          "is_sponsor_labeled": null,
+          "is_promoted": null
         },
         "images": [
           {
@@ -40,23 +40,23 @@
     {
       "product": {
         "id": 28870,
-        "fullName": "Prior Frokostegg fra frittgående høner Str L",
+        "full_name": "Prior Frokostegg fra frittgående høner Str L",
         "brand": "Prior",
         "name": "Frokostegg fra frittgående høner",
-        "frontUrl": "https://oda.com/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
-        "absoluteUrl": "/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
-        "grossPrice": "56.70",
-        "grossUnitPrice": "69.49",
-        "unitPriceQuantityAbbreviation": "kg",
-        "unitPriceQuantityName": "kilogram",
+        "front_url": "https://oda.com/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
+        "absolute_url": "/no/products/28870-prior-frokostegg-fra-frittgaende-honer-str-l/",
+        "gross_price": "56.70",
+        "gross_unit_price": "69.49",
+        "unit_price_quantity_abbreviation": "kg",
+        "unit_price_quantity_name": "kilogram",
         "currency": "NOK",
         "availability": {
-          "isAvailable": true,
+          "is_available": true,
           "description": ""
         },
         "metadata": {
-          "isSponsorLabeled": null,
-          "isPromoted": null
+          "is_sponsor_labeled": null,
+          "is_promoted": null
         },
         "images": [
           {

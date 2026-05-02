@@ -6,10 +6,10 @@
       "id": 430128,
       "title": "Standard groceries",
       "url": "https://oda.com/no/account/lists/details/430128/",
-      "totalQuantity": 14,
-      "numberOfProducts": 13,
-      "numberOfItems": 14,
-      "productIds": [12079, 28870, 9407]
+      "total_quantity": 14,
+      "number_of_products": 13,
+      "number_of_items": 14,
+      "product_ids": [12079, 28870, 9407]
     }
   ]
 }

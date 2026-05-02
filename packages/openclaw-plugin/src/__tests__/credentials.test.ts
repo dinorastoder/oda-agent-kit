@@ -35,8 +35,8 @@ describe('readEnvironmentCredentials', () => {
   });
 
   it('throws a credentials error (not a crash) when env is null', () => {
-    // JavaScript cannot distinguish f(undefined) from f() for default parameters,
-    // so we test with null, which bypasses the default and exercises null-safety.
+    // Passing null explicitly bypasses the default parameter (unlike undefined,
+    // which would trigger the default and fall back to process.env).
     expect(() =>
       readEnvironmentCredentials(null as unknown as NodeJS.ProcessEnv),
     ).toThrow(/Set both ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw/);
