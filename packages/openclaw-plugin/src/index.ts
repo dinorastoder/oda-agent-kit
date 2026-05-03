@@ -12,6 +12,7 @@ export type {
   PlannedGroceryItem,
   ReviewAccountOptions,
   SavedListOverview,
+  SavedListOverviewItem,
   ShoppingList,
   UnmatchedGroceryRequest,
 } from './plugin.js';
