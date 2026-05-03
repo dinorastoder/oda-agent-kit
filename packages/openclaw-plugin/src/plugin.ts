@@ -1,4 +1,4 @@
-import type { OdaCart, OdaClient, OdaDeliverySlot, OdaProduct } from '@oda-agent/core';
+import type { OdaCart, OdaClient, OdaDeliverySlot, OdaProduct, OdaShoppingList } from '@oda-agent/core';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -44,10 +44,19 @@ export interface CartOverview {
 }
 
 /** A compact saved-list summary for UI-facing tools. */
+export interface SavedListOverviewItem {
+  productId: number;
+  name: string;
+  quantity: number;
+  available: boolean;
+}
+
+/** A compact saved-list summary for UI-facing tools. */
 export interface SavedListOverview {
   id: number;
   name: string;
   itemCount: number;
+  items: SavedListOverviewItem[];
 }
 
 /** A compact product frequency summary. */
@@ -206,7 +215,13 @@ type OdaCartWithOverviewFields = OdaCart & {
 interface SavedListLike {
   id: number;
   name: string;
-  items?: unknown[];
+  items?: OdaShoppingList['items'];
+}
+
+function hasSavedListProduct(
+  item: OdaShoppingList['items'][number] | undefined,
+): item is OdaShoppingList['items'][number] {
+  return typeof item?.product?.id === 'number' && typeof item.product.full_name === 'string';
 }
 
 type OdaClientWithShoppingLists = {
@@ -277,6 +292,14 @@ function summarizeSavedLists(lists: SavedListLike[], maxSavedLists: number): Sav
     id: list.id,
     name: list.name,
     itemCount: asArray(list.items).length,
+    items: asArray(list.items)
+      .filter(hasSavedListProduct)
+      .map((item) => ({
+        productId: item.product.id,
+        name: item.product.full_name,
+        quantity: item.quantity,
+        available: item.product.is_available,
+      })),
   }));
 }
 

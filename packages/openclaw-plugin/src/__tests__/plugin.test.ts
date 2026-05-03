@@ -63,7 +63,54 @@ describe('createOpenClawPlugin', () => {
           item_count: 2,
         }),
         getShoppingLists: jest.fn().mockResolvedValue([
-          { id: 7, name: 'Weekly staples', items: [{}, {}] },
+          {
+            id: 7,
+            name: 'Weekly staples',
+            items: [
+              {
+                quantity: 1,
+                product: {
+                  id: 42,
+                  full_name: 'Oat Milk 1L',
+                  brand: 'Oatly',
+                  name: 'Oat Milk',
+                  front_url: '/products/42',
+                  gross_price: '29.90',
+                  gross_unit_price: '29.90',
+                  unit_price_quantity_abbreviation: 'L',
+                  unit_price_quantity_name: 'liter',
+                  currency: 'NOK',
+                  is_available: true,
+                  is_sponsored: false,
+                  promoted_product: false,
+                  images: [],
+                  discount: null,
+                  availability: { is_available: true, description: null },
+                },
+              },
+              {
+                quantity: 3,
+                product: {
+                  id: 43,
+                  full_name: 'Bananas',
+                  brand: 'Bama',
+                  name: 'Bananas',
+                  front_url: '/products/43',
+                  gross_price: '29.90',
+                  gross_unit_price: '29.90',
+                  unit_price_quantity_abbreviation: 'kg',
+                  unit_price_quantity_name: 'kilogram',
+                  currency: 'NOK',
+                  is_available: true,
+                  is_sponsored: false,
+                  promoted_product: false,
+                  images: [],
+                  discount: null,
+                  availability: { is_available: true, description: null },
+                },
+              },
+            ],
+          },
         ]),
         getOrders: jest.fn().mockResolvedValue({
           count: 1,
@@ -128,7 +175,27 @@ describe('createOpenClawPlugin', () => {
         label: null,
         available: true,
       });
-      expect(review.savedLists).toEqual([{ id: 7, name: 'Weekly staples', itemCount: 2 }]);
+      expect(review.savedLists).toEqual([
+        {
+          id: 7,
+          name: 'Weekly staples',
+          itemCount: 2,
+          items: [
+            {
+              productId: 42,
+              name: 'Oat Milk 1L',
+              quantity: 1,
+              available: true,
+            },
+            {
+              productId: 43,
+              name: 'Bananas',
+              quantity: 3,
+              available: true,
+            },
+          ],
+        },
+      ]);
       expect(review.orderHistory?.mostOrderedProducts[0]).toEqual({
         productId: 42,
         name: 'Oat Milk 1L',
@@ -273,7 +340,7 @@ describe('createOpenClawPlugin', () => {
         summaryLines: [],
         feeLines: [],
       });
-      expect(review.savedLists).toEqual([{ id: 7, name: 'Weekly staples', itemCount: 0 }]);
+      expect(review.savedLists).toEqual([{ id: 7, name: 'Weekly staples', itemCount: 0, items: [] }]);
       expect(review.delivery).toEqual({
         availableSlotCount: 0,
         cheapestSlot: undefined,
