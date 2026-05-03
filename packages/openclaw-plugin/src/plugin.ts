@@ -43,7 +43,7 @@ export interface CartOverview {
   feeLines: CartOverviewPriceLine[];
 }
 
-/** A compact saved-list summary for UI-facing tools. */
+/** A compact saved-list item summary for UI-facing tools. */
 export interface SavedListOverviewItem {
   productId: number;
   name: string;
