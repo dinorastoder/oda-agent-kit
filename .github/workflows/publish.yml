@@ -81,7 +81,6 @@ jobs:
           echo "Publishing with dist-tag: $DIST_TAG"
 
       # Publish in dependency order: core must come before adapters.
-      # All package publish steps authenticate with NPM_TOKEN via NODE_AUTH_TOKEN.
       - name: Publish @oda-agent/core
         run: |
           npm publish \
