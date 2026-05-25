@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # required for npm provenance
     outputs:
       version: ${{ steps.version.outputs.version }}
       dist_tag: ${{ steps.tag.outputs.dist_tag }}
@@ -87,32 +86,36 @@ jobs:
           npm publish \
             --workspace=packages/core \
             --access public \
-            --tag "${{ steps.tag.outputs.dist_tag }}" \
-            --provenance
+            --tag "${{ steps.tag.outputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/cli
         run: |
           npm publish \
             --workspace=packages/cli \
             --access public \
-            --tag "${{ steps.tag.outputs.dist_tag }}" \
-            --provenance
+            --tag "${{ steps.tag.outputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/mcp-server
         run: |
           npm publish \
             --workspace=packages/mcp-server \
             --access public \
-            --tag "${{ steps.tag.outputs.dist_tag }}" \
-            --provenance
+            --tag "${{ steps.tag.outputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/openclaw-plugin
         run: |
           npm publish \
             --workspace=packages/openclaw-plugin \
             --access public \
-            --tag "${{ steps.tag.outputs.dist_tag }}" \
-            --provenance
+            --tag "${{ steps.tag.outputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   smoke-test:
     name: Smoke-test published packages
