@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/openclaw-plugin",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "OpenClaw plugin for safe grocery planning and Oda automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@oda-agent/core": "^0.6.5"
+    "@oda-agent/core": "^0.6.6"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
@@ -27,10 +27,5 @@
     "type": "git",
     "url": "git+https://github.com/dinorastoder/oda-agent-kit.git"
   },
-  "license": "MIT",
-  "openclaw": {
-    "extensions": [
-      "./dist/index.js"
-    ]
-  }
+  "license": "MIT"
 }
