@@ -173,25 +173,27 @@ triggered two ways:
 2. **Manual dispatch** — go to _Actions → Publish packages → Run workflow_ in the
    GitHub UI and choose the dist-tag (`latest`, `rc`, `beta`, `alpha`).
 
-The workflow builds all packages and publishes them in the correct order using the
-`NPM_TOKEN` secret that must be set in the repository's _Settings → Secrets_.
+The workflow builds all packages and publishes them in the correct order using npm
+Trusted Publishers via GitHub OIDC, so no repository npm token is required.
 
 See `.github/workflows/publish.yml` for the full configuration.
 
-### Setting up NPM_TOKEN
+### Setting up npm Trusted Publishers
 
-Before running the publish workflow you must add an npm access token to the repo:
+Before running the publish workflow, configure each `@oda-agent/*` package on npm to
+trust this GitHub repository as a publisher:
 
-1. Log in to [npmjs.com](https://www.npmjs.com) and go to
-   _Profile → Access Tokens → Generate New Token_.
-2. Choose **Granular Access Token** (or **Classic Token** with `Automation` type).
-3. Grant **Read and Write** (publish) permission for the `@oda-agent` scope.
-4. Copy the token.
-5. In the GitHub repository go to
-   _Settings → Secrets and variables → Actions → New repository secret_.
-6. Name: `NPM_TOKEN`, Value: the token you copied.
+1. Log in to [npmjs.com](https://www.npmjs.com).
+2. Open each package's settings page and add a **Trusted Publisher** entry.
+3. Select GitHub Actions as the provider.
+4. Point the publisher to the `dinorastoder/oda-agent-kit` repository and the
+   `.github/workflows/publish.yml` workflow.
+5. Repeat for all published packages:
+   `@oda-agent/core`, `@oda-agent/cli`, `@oda-agent/mcp-server`, and
+   `@oda-agent/openclaw-plugin`.
 
-The publish workflow reads this secret as `NODE_AUTH_TOKEN`.
+Once trusted publishers are configured, the workflow can publish with GitHub OIDC
+and `--provenance` without `NPM_TOKEN` or `NODE_AUTH_TOKEN`.
 
 ### Workflow jobs
 
