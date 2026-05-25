@@ -82,9 +82,7 @@ jobs:
           echo "Publishing with dist-tag: $DIST_TAG"
 
       # Publish in dependency order: core must come before adapters.
-      # @oda-agent/core uses npm Trusted Publishers (OIDC) — no token needed.
-      # Adapter packages are not yet enrolled in Trusted Publishers, so they
-      # authenticate with NPM_TOKEN via NODE_AUTH_TOKEN.
+      # All package publish steps authenticate with NPM_TOKEN via NODE_AUTH_TOKEN.
       - name: Publish @oda-agent/core
         run: |
           npm publish \
@@ -92,6 +90,8 @@ jobs:
             --access public \
             --tag "${{ steps.tag.outputs.dist_tag }}" \
             --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/cli
         run: |
