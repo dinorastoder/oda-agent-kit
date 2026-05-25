@@ -27,10 +27,5 @@
     "type": "git",
     "url": "git+https://github.com/dinorastoder/oda-agent-kit.git"
   },
-  "license": "MIT",
-  "openclaw": {
-    "extensions": [
-      "./dist/index.js"
-    ]
-  }
+  "license": "MIT"
 }
