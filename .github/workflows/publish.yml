@@ -82,7 +82,7 @@ jobs:
           echo "Publishing with dist-tag: $DIST_TAG"
 
       # Publish in dependency order: core must come before adapters.
-      # All packages use npm Trusted Publishers (OIDC) — no token needed.
+      # All package publish steps authenticate with NPM_TOKEN via NODE_AUTH_TOKEN.
       - name: Publish @oda-agent/core
         run: |
           npm publish \
@@ -90,6 +90,8 @@ jobs:
             --access public \
             --tag "${{ steps.tag.outputs.dist_tag }}" \
             --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/cli
         run: |
@@ -98,6 +100,8 @@ jobs:
             --access public \
             --tag "${{ steps.tag.outputs.dist_tag }}" \
             --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/mcp-server
         run: |
@@ -106,6 +110,8 @@ jobs:
             --access public \
             --tag "${{ steps.tag.outputs.dist_tag }}" \
             --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @oda-agent/openclaw-plugin
         run: |
@@ -114,6 +120,8 @@ jobs:
             --access public \
             --tag "${{ steps.tag.outputs.dist_tag }}" \
             --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   smoke-test:
     name: Smoke-test published packages
