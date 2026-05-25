@@ -6,6 +6,14 @@
   "author": "oda-agent-kit",
   "license": "MIT",
   "runtime": "node",
+  "contracts": {
+    "tools": [
+      "browse_oda_catalog",
+      "review_shopping_overview",
+      "plan_grocery_list",
+      "apply_cart_changes"
+    ]
+  },
   "configSchema": {
     "type": "object",
     "description": "Set ODA_EMAIL and ODA_PASSWORD in the environment before launching OpenClaw. Reload the plugin after changing either value.",
