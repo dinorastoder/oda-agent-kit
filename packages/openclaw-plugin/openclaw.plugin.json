@@ -6,6 +6,9 @@
   "author": "oda-agent-kit",
   "license": "MIT",
   "runtime": "node",
+  "extensions": [
+    "./dist/index.js"
+  ],
   "contracts": {
     "tools": [
       "browse_oda_catalog",
