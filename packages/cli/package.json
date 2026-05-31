@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/cli",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "CLI tool for interacting with Oda grocery from the terminal",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@oda-agent/core": "^0.6.7",
+    "@oda-agent/core": "^0.6.8",
     "commander": "^12.1.0",
     "dotenv": "^16.4.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/core",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "Oda API client, types, and authentication helpers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

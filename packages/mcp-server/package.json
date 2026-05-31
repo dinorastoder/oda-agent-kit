@@ -1,6 +1,6 @@
 {
   "name": "@oda-agent/mcp-server",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "MCP server exposing Oda operations as AI tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.0",
-    "@oda-agent/core": "^0.6.7",
+    "@oda-agent/core": "^0.6.8",
     "dotenv": "^16.4.0",
     "zod": "^3.23.0"
   },
