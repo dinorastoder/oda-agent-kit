@@ -82,9 +82,29 @@ class NodeFetchHttpClient implements OdaHttpClient {
 
   constructor(private readonly baseUrl: string) {}
 
+  /**
+   * Resolve a fetch implementation: prefer the native global fetch (Node 18.x+
+   * with --experimental-fetch, Node 21+, Node 24 / OpenClaw) and fall back to
+   * dynamically importing `node-fetch` for older runtimes.
+   */
+  private async resolveFetch(): Promise<typeof globalThis.fetch> {
+    if (typeof globalThis.fetch === 'function') {
+      return globalThis.fetch.bind(globalThis) as typeof globalThis.fetch;
+    }
+
+    // Use `new Function` to produce a true dynamic import that works from CJS
+    // bundles without being statically rewritten by TypeScript/bundlers.
+    const imported = await (new Function(
+      'specifier',
+      'return import(specifier)',
+    ) as (specifier: string) => Promise<{ default: typeof globalThis.fetch }>)('node-fetch');
+
+    return imported.default as unknown as typeof globalThis.fetch;
+  }
+
   /** GET `url` to seed the cookie jar (e.g. to acquire a CSRF token). */
   async prefetch(url: string): Promise<void> {
-    const { default: fetch } = await import('node-fetch');
+    const fetch = await this.resolveFetch();
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -138,7 +158,7 @@ class NodeFetchHttpClient implements OdaHttpClient {
   }
 
   async request(req: OdaHttpRequest): Promise<OdaHttpResponse> {
-    const { default: fetch } = await import('node-fetch');
+    const fetch = await this.resolveFetch();
 
     const url = req.path.startsWith('http') ? req.path : buildUrl(this.baseUrl, req.path);
 
