@@ -245,12 +245,99 @@ export const OdaDeliverySlotSchema: z.ZodType<OdaDeliverySlot> = z.object({
   is_available: z.boolean(),
 });
 
-/** Zod schema for search responses. */
-export const OdaSearchResponseSchema: z.ZodType<OdaSearchResponse> = z.object({
-  results: z.array(OdaProductSchema),
-  count: z.number().int(),
-  query: z.string(),
+/**
+ * Product schema for the search endpoint (new API format).
+ *
+ * The updated Oda search API returns products in a format similar to
+ * the product-lists endpoint — with nested `availability` and `metadata`
+ * objects instead of top-level boolean flags.
+ */
+const OdaSearchProductSchema = z.object({
+  id: z.number().int(),
+  full_name: z.string(),
+  brand: z.string().nullable(),
+  name: z.string(),
+  front_url: z.string().optional(),
+  absolute_url: z.string().optional(),
+  gross_price: z.string(),
+  gross_unit_price: z.string(),
+  unit_price_quantity_abbreviation: z.string(),
+  unit_price_quantity_name: z.string(),
+  currency: z.string(),
+  availability: z.object({
+    is_available: z.boolean(),
+    description: z.string().nullable().optional(),
+  }).passthrough(),
+  metadata: z.object({
+    is_sponsor_labeled: z.boolean().nullable().optional(),
+    is_promoted: z.boolean().nullable().optional(),
+  }).passthrough().optional(),
+  images: z.array(z.object({
+    thumbnail: z.object({ url: z.string() }).optional(),
+    large: z.object({ url: z.string() }).optional(),
+  }).passthrough()),
+  discount: z.unknown().nullable().optional(),
+}).passthrough().transform((product): OdaProduct => {
+  const firstImage = product.images[0];
+  const thumbnail = firstImage?.thumbnail ?? firstImage?.large ?? { url: '' };
+  const large = firstImage?.large ?? firstImage?.thumbnail ?? thumbnail;
+
+  return {
+    id: product.id,
+    full_name: product.full_name,
+    brand: product.brand,
+    name: product.name,
+    front_url: product.front_url ?? product.absolute_url ?? '',
+    gross_price: product.gross_price,
+    gross_unit_price: product.gross_unit_price,
+    unit_price_quantity_abbreviation: product.unit_price_quantity_abbreviation,
+    unit_price_quantity_name: product.unit_price_quantity_name,
+    currency: product.currency,
+    is_available: product.availability.is_available,
+    is_sponsored: product.metadata?.is_sponsor_labeled ?? false,
+    promoted_product: product.metadata?.is_promoted ?? false,
+    images: [
+      {
+        thumbnail,
+        small_thumbnail: thumbnail,
+        large_thumbnail: large,
+      },
+    ],
+    discount: product.discount != null && typeof product.discount === 'object'
+      ? product.discount as OdaDiscount
+      : null,
+    availability: {
+      is_available: product.availability.is_available,
+      description: product.availability.description ?? null,
+    },
+  };
 });
+
+/**
+ * Zod schema for search responses.
+ *
+ * Supports both the legacy format (`{results, count, query}`) and the
+ * current API format (`{products, attributes, categories}`).
+ */
+export const OdaSearchResponseSchema: z.ZodType<OdaSearchResponse> = z.union([
+  // Current API format
+  z.object({
+    products: z.array(OdaSearchProductSchema),
+    attributes: z.object({
+      total_hits: z.number().int(),
+    }).passthrough(),
+  }).passthrough().transform((data) => ({
+    results: data.products,
+    count: data.attributes.total_hits,
+    query: '',
+  })),
+  // Legacy format
+  z.object({
+    results: z.array(OdaProductSchema),
+    count: z.number().int(),
+    query: z.string(),
+  }),
+]) as z.ZodType<OdaSearchResponse>;
 
 /** Zod schema for login responses. */
 export const OdaLoginResponseSchema = z.object({
