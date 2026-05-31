@@ -12,7 +12,6 @@
  */
 
 import { OdaClient } from '@oda-agent/core';
-import type { BrowseCatalogParams } from './tools/readOnlyTools.js';
 import * as readOnlyTools from './tools/readOnlyTools.js';
 import * as cartMutationTools from './tools/cartMutationTools.js';
 import { readEnvironmentCredentials } from './credentials.js';
@@ -83,7 +82,7 @@ function registerTool(
   label: string,
   description: string,
   parameters: OpenClawToolDefinition['parameters'],
-  handler: (params: unknown) => Promise<unknown>,
+  handler: (params: Record<string, unknown>) => Promise<unknown>,
 ): void {
   api.registerTool({
     name,
@@ -91,7 +90,14 @@ function registerTool(
     description,
     parameters,
     async execute(_toolCallId: string, params: unknown) {
-      return handler(params);
+      // Normalise params: OpenClaw may pass null/undefined when no arguments
+      // are supplied by the caller, which would break Object.keys/entries
+      // downstream. Coerce to a plain object to prevent TypeError.
+      const safeParams: Record<string, unknown> =
+        params != null && typeof params === 'object' && !Array.isArray(params)
+          ? (params as Record<string, unknown>)
+          : {};
+      return handler(safeParams);
     },
   });
 }
@@ -159,8 +165,15 @@ export function register(api: OpenClawApi): void {
       required: ['query'],
     },
     async (params) => {
+      const query = typeof params['query'] === 'string' ? params['query'] : '';
+      if (!query) {
+        throw new Error('A search query is required. Provide a "query" parameter to browse the Oda catalog.');
+      }
       const { client } = await ensureLoggedIn();
-      return readOnlyTools.browseCatalog(client, params as BrowseCatalogParams);
+      return readOnlyTools.browseCatalog(client, {
+        query,
+        limit: typeof params['limit'] === 'number' ? params['limit'] : undefined,
+      });
     },
   );
 
@@ -204,7 +217,7 @@ export function register(api: OpenClawApi): void {
     },
     async (params) => {
       const { plugin } = await ensureLoggedIn();
-      return plugin.reviewAccount((params ?? {}) as ReviewAccountOptions);
+      return plugin.reviewAccount(params as ReviewAccountOptions);
     },
   );
 
@@ -243,8 +256,19 @@ export function register(api: OpenClawApi): void {
     },
     async (params) => {
       const { plugin } = await ensureLoggedIn();
-      const plan = params as { name: string; requests: GroceryRequest[] };
-      return plugin.planGroceries(plan.name, plan.requests);
+      const name = typeof params['name'] === 'string' ? params['name'] : '';
+      const rawRequests = Array.isArray(params['requests']) ? params['requests'] : [];
+      const requests: GroceryRequest[] = rawRequests
+        .filter((r): r is Record<string, unknown> => r != null && typeof r === 'object')
+        .map((r) => ({
+          query: typeof r['query'] === 'string' ? r['query'] : '',
+          quantity: typeof r['quantity'] === 'number' ? r['quantity'] : undefined,
+        }))
+        .filter((r) => r.query.length > 0);
+      if (!name || requests.length === 0) {
+        throw new Error('Both "name" and a non-empty "requests" array (each with a "query" string) are required to plan a grocery list.');
+      }
+      return plugin.planGroceries(name, requests);
     },
   );
 
@@ -319,7 +343,38 @@ export function register(api: OpenClawApi): void {
     },
     async (params) => {
       const { client } = await ensureLoggedIn();
-      return cartMutationTools.updateCart(client, params as cartMutationTools.UpdateCartParams);
+      const mode = params['mode'];
+      if (typeof mode !== 'string' || !['apply-plan', 'add-products', 'remove-products', 'clear-cart'].includes(mode)) {
+        throw new Error('A valid "mode" is required: "apply-plan", "add-products", "remove-products", or "clear-cart".');
+      }
+
+      const updateParams: cartMutationTools.UpdateCartParams = {
+        mode: mode as cartMutationTools.UpdateCartParams['mode'],
+      };
+
+      if (mode === 'apply-plan' && params['plan'] != null && typeof params['plan'] === 'object') {
+        const rawPlan = params['plan'] as Record<string, unknown>;
+        updateParams.plan = {
+          name: typeof rawPlan['name'] === 'string' ? rawPlan['name'] : 'Unnamed plan',
+          items: Array.isArray(rawPlan['items'])
+            ? (rawPlan['items'] as Record<string, unknown>[])
+                .filter((i) => typeof i['productId'] === 'number' && typeof i['quantity'] === 'number')
+                .map((i) => ({ productId: i['productId'] as number, quantity: i['quantity'] as number }))
+            : [],
+        };
+      }
+
+      if (mode === 'add-products' && Array.isArray(params['items'])) {
+        updateParams.items = (params['items'] as Record<string, unknown>[])
+          .filter((i) => i != null && typeof i['productId'] === 'number' && typeof i['quantity'] === 'number')
+          .map((i) => ({ productId: i['productId'] as number, quantity: i['quantity'] as number }));
+      }
+
+      if (mode === 'remove-products' && Array.isArray(params['productIds'])) {
+        updateParams.productIds = (params['productIds'] as unknown[]).filter((id): id is number => typeof id === 'number');
+      }
+
+      return cartMutationTools.updateCart(client, updateParams);
     },
   );
 }

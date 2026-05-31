@@ -1,6 +1,6 @@
 {
   "name": "oda-agent-kit",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "private": true,
   "description": "TypeScript monorepo for building reusable automation tools around Oda grocery shopping",
   "workspaces": [
